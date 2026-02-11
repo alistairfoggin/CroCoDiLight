@@ -7,9 +7,9 @@ from torch import nn
 import wandb
 from torch.utils.data import ConcatDataset, DataLoader
 
-from lighting.dataloader import HypersimDataset, CGIntrinsicDataset, DualDirectoryDataset, BigTimeDataset
-from lighting.relighting_modules import img_mean, img_std
-from lighting.relighting_model import load_relight_model, LightingMapper
+from crocodilight.dataloader import HypersimDataset, CGIntrinsicDataset, DualDirectoryDataset, BigTimeDataset
+from crocodilight.relighting_modules import img_mean, img_std
+from crocodilight.relighting_model import load_relight_model, LightingMapper
 
 base_root_dir = "./datasets/" # Replace with your datasets directory path
 
@@ -61,7 +61,7 @@ def train_mapper(mapper_type: str):
     dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True, num_workers=4)
 
     device = torch.device('cuda:0' if torch.cuda.is_available() and torch.cuda.device_count() > 0 else 'cpu')
-    croco_relight = load_relight_model('pretrained_models/CroCoDiLight.pth', device)
+    croco_relight = load_relight_model('pretrained_models/crocodilight.pth', device)
     # Freeze all components - only the mapper will be trained
     croco_relight.freeze_components(encoder=True, decoder=True, extractor=True, entangler=True)
 
@@ -75,7 +75,7 @@ def train_mapper(mapper_type: str):
 
     run = wandb.init(
         entity="your-wandb-entity",  # replace with your wandb entity
-        project=f"CroCoDiLight-{mapper_type}-mapper-train",
+        project=f"crocodilight-{mapper_type}-mapper-train",
         config={"epochs": epochs, "learning_rate": lr, "batch_size": batch_size},
         notes="Train albedo estimation" if mapper_type == "albedo" else "Train shadow removal with INS",
     )

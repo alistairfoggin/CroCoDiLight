@@ -1,7 +1,7 @@
 """Evaluation metrics for CroCoDiLight."""
 
-from evaluations.whdr import compute_whdr
-from evaluations.metrics import (
+from crocodilight.evaluation.whdr import compute_whdr
+from crocodilight.evaluation.metrics import (
     list_images,
     read_img,
     mae_rmse_lab,

@@ -16,24 +16,24 @@ _croco_dir = os.path.join(_project_root, 'croco')
 if _croco_dir not in sys.path:
     sys.path.insert(0, _croco_dir)
 
-from lighting.relighting_modules import (
+from crocodilight.relighting_modules import (
     LightingExtractor,
     LightingEntangler,
     LightingDecoder,
 )
-from lighting.relighting_model import (
+from crocodilight.relighting_model import (
     CroCoDecode,
     RelightModule,
     LightingMapper,
 )
-from lighting.dataloader import (
+from crocodilight.dataloader import (
     BigTimeDataset,
     DualDirectoryDataset,
     HypersimDataset,
     CGIntrinsicDataset,
     ScenePairDataset,
 )
-from lighting.inference import (
+from crocodilight.inference import (
     get_device,
     load_model,
     load_mapper,

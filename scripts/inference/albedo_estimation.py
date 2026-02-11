@@ -10,7 +10,7 @@ import argparse
 
 import torch
 
-from lighting.inference import (
+from crocodilight.inference import (
     get_device, load_model, load_mapper, get_transform,
     load_and_transform, save_tensor_image, process_input,
     pad_to_min_size, unpad,
@@ -18,10 +18,10 @@ from lighting.inference import (
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Estimate albedo from images using CroCoDiLight")
+    parser = argparse.ArgumentParser(description="Estimate albedo from images using crocodilight")
     parser.add_argument("--input", required=True, help="Input image or folder")
     parser.add_argument("--output", required=True, help="Output image or folder")
-    parser.add_argument("--model", default="pretrained_models/CroCoDiLight.pth", help="Model checkpoint path")
+    parser.add_argument("--model", default="pretrained_models/crocodilight.pth", help="Model checkpoint path")
     parser.add_argument("--mapper", default="pretrained_models/CroCoDiLight_albedo_mapper.pth", help="Albedo mapper weights path")
     parser.add_argument("--device", default=None, help="Device (e.g. cuda:0, cpu). Auto-detects if not set.")
     args = parser.parse_args()

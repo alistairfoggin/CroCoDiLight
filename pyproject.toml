@@ -28,10 +28,6 @@ dependencies = [
     "wandb",
 ]
 
-[project.optional-dependencies]
-dev = ["pytest", "black", "isort"]
-habitat = ["habitat-sim", "quaternion"]
-
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["lighting*", "evaluations*"]
+include = ["crocodilight*"]

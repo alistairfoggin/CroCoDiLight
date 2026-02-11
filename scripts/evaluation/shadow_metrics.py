@@ -13,7 +13,7 @@ import os
 import cv2
 import numpy as np
 
-from evaluations.metrics import (
+from crocodilight.evaluation.metrics import (
     list_images, read_img, mae_rmse_lab, psnr_score, ssim_score,
     create_lpips_fn, calc_lpips,
 )
@@ -65,7 +65,7 @@ def main():
     parser.add_argument("--device", default=None, help="Device for LPIPS computation")
     args = parser.parse_args()
 
-    from lighting.inference import get_device
+    from crocodilight.inference import get_device
     device = get_device(args.device)
     lpips_fn = create_lpips_fn(device)
 

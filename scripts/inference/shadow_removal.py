@@ -10,17 +10,17 @@ import argparse
 
 import torch
 
-from lighting.inference import (
+from crocodilight.inference import (
     get_device, load_model, load_mapper, get_transform,
     load_and_transform, save_tensor_image, process_input,
 )
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Remove shadows from images using CroCoDiLight")
+    parser = argparse.ArgumentParser(description="Remove shadows from images using crocodilight")
     parser.add_argument("--input", required=True, help="Input image or folder")
     parser.add_argument("--output", required=True, help="Output image or folder")
-    parser.add_argument("--model", default="pretrained_models/CroCoDiLight.pth", help="Model checkpoint path")
+    parser.add_argument("--model", default="pretrained_models/crocodilight.pth", help="Model checkpoint path")
     parser.add_argument("--mapper", default="pretrained_models/CroCoDiLight_shadow_mapper.pth", help="Shadow mapper weights path")
     parser.add_argument("--device", default=None, help="Device (e.g. cuda:0, cpu). Auto-detects if not set.")
     args = parser.parse_args()

@@ -12,19 +12,19 @@ import os
 
 import torch
 
-from lighting.inference import (
+from crocodilight.inference import (
     get_device, load_model, get_transform, extract_features,
     save_tensor_image,
 )
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Interpolate lighting between two images")
+    parser = argparse.ArgumentParser(description="Interpolate crocodilight between two images")
     parser.add_argument("--frame-a", required=True, help="First frame")
     parser.add_argument("--frame-b", required=True, help="Second frame")
     parser.add_argument("--output-dir", required=True, help="Output directory for interpolated frames")
     parser.add_argument("--steps", type=int, default=5, help="Number of interpolation steps")
-    parser.add_argument("--model", default="pretrained_models/CroCoDiLight.pth", help="Model checkpoint path")
+    parser.add_argument("--model", default="pretrained_models/crocodilight.pth", help="Model checkpoint path")
     parser.add_argument("--device", default=None, help="Device (e.g. cuda:0, cpu). Auto-detects if not set.")
     parser.add_argument("--resize", type=int, default=1024, help="Resize images before processing")
     args = parser.parse_args()

@@ -1,4 +1,4 @@
-"""Shared inference utilities for CroCoDiLight scripts.
+"""Shared inference utilities for crocodilight scripts.
 
 Centralizes model loading, image transforms, tensor I/O, and feature extraction
 patterns that were previously copy-pasted across 5+ scripts.
@@ -12,8 +12,8 @@ import torchvision.transforms.v2 as transforms
 from blended_tiling import TilingModule
 from PIL import Image
 
-from lighting.relighting_modules import img_mean, img_std, rescale_image
-from lighting.relighting_model import load_relight_model, LightingMapper
+from crocodilight.relighting_modules import img_mean, img_std, rescale_image
+from crocodilight.relighting_model import load_relight_model, LightingMapper
 
 
 def get_device(device_str=None):
@@ -31,7 +31,7 @@ def get_device(device_str=None):
     return torch.device('cuda:0' if torch.cuda.is_available() and torch.cuda.device_count() > 0 else 'cpu')
 
 
-def load_model(model_path="pretrained_models/CroCoDiLight.pth", device=None):
+def load_model(model_path="pretrained_models/crocodilight.pth", device=None):
     """Load RelightModule onto device, set to inference mode.
 
     Args:

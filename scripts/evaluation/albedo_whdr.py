@@ -13,7 +13,7 @@ import os
 
 import numpy as np
 
-from evaluations.whdr import compute_whdr, load_image
+from crocodilight.evaluation.whdr import compute_whdr, load_image
 
 
 def main():

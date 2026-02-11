@@ -10,8 +10,8 @@ import torchvision.transforms.functional as F
 from torchvision.datasets import ImageNet
 from torchvision.utils import make_grid
 
-from lighting.relighting_modules import img_mean, img_std
-from lighting.relighting_model import CroCoDecode
+from crocodilight.relighting_modules import img_mean, img_std
+from crocodilight.relighting_model import CroCoDecode
 
 def show(imgs):
     if not isinstance(imgs, list):
@@ -31,7 +31,7 @@ if __name__ == "__main__":
 
     run = wandb.init(
         entity="your-wandb-entity",  # replace with your wandb entity
-        project="CroCoDiLight-pretrain",
+        project="crocodilight-pretrain",
         config={"epochs": epochs, "learning_rate": lr, "batch_size": batch_size},
         notes="224 resolution with LPIPS AlexNet",
     )

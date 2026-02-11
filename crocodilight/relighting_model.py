@@ -4,7 +4,7 @@ import torch
 from torch import nn
 from blended_tiling import TilingModule
 
-from lighting.relighting_modules import LightingExtractor, LightingEntangler
+from crocodilight.relighting_modules import LightingExtractor, LightingEntangler
 from croco.models.blocks import Block
 from croco.models.croco import CroCoNet
 from croco.models.head_downstream import PixelwiseTaskWithDPT
@@ -138,8 +138,8 @@ class RelightModule(nn.Module):
         Args:
             encoder: If True, freeze the CroCo encoder (default: True)
             decoder: If True, freeze the CroCo decoder (default: True)
-            extractor: If True, freeze the lighting extractor/disentangler (default: False)
-            entangler: If True, freeze the lighting entangler (default: False)
+            extractor: If True, freeze the crocodilight extractor/disentangler (default: False)
+            entangler: If True, freeze the crocodilight entangler (default: False)
 
         Common configurations:
             - Relighting training: freeze_components(True, False, False, False)

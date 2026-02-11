@@ -12,7 +12,7 @@ import argparse
 
 import torch
 
-from lighting.inference import (
+from crocodilight.inference import (
     get_device, load_model, get_transform, extract_features,
     save_tensor_image, process_input,
 )
@@ -23,7 +23,7 @@ def main():
     parser.add_argument("--reference", required=True, help="Reference image providing the lighting")
     parser.add_argument("--input", required=True, help="Input image or folder (provides content)")
     parser.add_argument("--output", required=True, help="Output image or folder")
-    parser.add_argument("--model", default="pretrained_models/CroCoDiLight.pth", help="Model checkpoint path")
+    parser.add_argument("--model", default="pretrained_models/crocodilight.pth", help="Model checkpoint path")
     parser.add_argument("--device", default=None, help="Device (e.g. cuda:0, cpu). Auto-detects if not set.")
     parser.add_argument("--resize", type=int, default=None, help="Resize images before processing")
     args = parser.parse_args()
@@ -33,7 +33,7 @@ def main():
     transform = get_transform()
     img_info = {"height": 448, "width": 448}
 
-    # Extract lighting features from reference
+    # Extract crocodilight features from reference
     _, dyn_ref, _, _ = extract_features(model, args.reference, device, transform, resize=args.resize)
 
     def process(img_path, out_path):

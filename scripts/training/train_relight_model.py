@@ -6,10 +6,10 @@ from torch.utils.data import DataLoader, ConcatDataset
 
 import torchvision.transforms.v2 as transforms
 
-from lighting.dataloader import BigTimeDataset, DualDirectoryDataset, HypersimDataset, CGIntrinsicDataset, \
+from crocodilight.dataloader import BigTimeDataset, DualDirectoryDataset, HypersimDataset, CGIntrinsicDataset, \
     ScenePairDataset
-from lighting.relighting_modules import img_mean, img_std
-from lighting.relighting_model import CroCoDecode, RelightModule
+from crocodilight.relighting_modules import img_mean, img_std
+from crocodilight.relighting_model import CroCoDecode, RelightModule
 
 if __name__ == "__main__":
     epochs = 10
@@ -18,7 +18,7 @@ if __name__ == "__main__":
 
     run = wandb.init(
         entity="your-wandb-entity",  # replace with your wandb entity
-        project="CroCoDiLight-train",
+        project="crocodilight-train",
         config={"epochs": epochs, "learning_rate": lr, "batch_size": batch_size},
         notes="bigtime+mit_illumination+srd+wsrd+istd+hypersim+cgi 448x448 LPIPS+MSE",
     )
@@ -148,7 +148,7 @@ if __name__ == "__main__":
                 run.log({"train_images": wandb_img}, step=step)
             if i == 0:
                 torch.save({'croco_kwargs': croco_kwargs, 'model': croco_relight.state_dict()},
-                           "pretrained_models/CroCoDiLight.pth")
+                           "pretrained_models/crocodilight.pth")
 
         # Validation
         val_relight_losses = []
@@ -221,5 +221,5 @@ if __name__ == "__main__":
             f"Epoch {epoch}, Validation relighting loss: {val_relight_loss}, Validation delight loss: {val_delight_loss}")
 
     torch.save({'croco_kwargs': croco_kwargs, 'model': croco_relight.state_dict()},
-               "pretrained_models/CroCoDiLight.pth")
+               "pretrained_models/crocodilight.pth")
     run.finish()
