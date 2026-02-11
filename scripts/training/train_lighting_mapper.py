@@ -7,14 +7,11 @@ from torch import nn
 import wandb
 from torch.utils.data import ConcatDataset, DataLoader
 
-import sys
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
 from lighting.dataloader import HypersimDataset, CGIntrinsicDataset, DualDirectoryDataset, BigTimeDataset
 from lighting.relighting_modules import img_mean, img_std
 from lighting.relighting_model import load_relight_model, LightingMapper
 
-base_root_dir = "./datasets/relighting/" # Replace with your datasets directory path
+base_root_dir = "./datasets/" # Replace with your datasets directory path
 
 
 def train_mapper(mapper_type: str):
@@ -30,9 +27,9 @@ def train_mapper(mapper_type: str):
 
     val_dataset = None
     if mapper_type == "albedo":
-        root_dir_hypersim = base_root_dir + "ml-hypersim/"
-        root_dir_cgi = base_root_dir + "cgi/intrinsics_final/"
-        root_dir_mit_illumination_test = base_root_dir + "mit_test/"
+        root_dir_hypersim = base_root_dir + "ML-HyperSim/"
+        root_dir_cgi = base_root_dir + "CGIntrinsics/"
+        root_dir_mit_illumination_test = base_root_dir + "Multi_Illumination/test/"
 
         dataset_hypersim = HypersimDataset(root_dir_hypersim, split="train", transform=transform)
         dataset_cgi = CGIntrinsicDataset(root_dir_cgi, transform=transform)
@@ -43,9 +40,9 @@ def train_mapper(mapper_type: str):
         val_dataset = ConcatDataset([val_hypersim])
 
     elif mapper_type == "shadow":
-        root_dir_srd = base_root_dir + "srd/SRD/"
-        root_dir_wsrd = base_root_dir + "wsrd/"
-        root_dir_istd = base_root_dir + "ISTD_Dataset/"
+        root_dir_srd = base_root_dir + "SRD/"
+        root_dir_wsrd = base_root_dir + "WSRD+/"
+        root_dir_istd = base_root_dir + "ISTD+/"
         dataset_srd = DualDirectoryDataset(root_dir_srd, "shadow", "shadow_free", transform=transform,
                                            split="train", suffix="_no_shadow")
         dataset_wsrd = DualDirectoryDataset(root_dir_wsrd, "input", "gt", transform=transform, split="train")
@@ -64,21 +61,21 @@ def train_mapper(mapper_type: str):
     dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True, num_workers=4)
 
     device = torch.device('cuda:0' if torch.cuda.is_available() and torch.cuda.device_count() > 0 else 'cpu')
-    croco_relight = load_relight_model('pretrained_models/croco_relight_full.pth', device)
+    croco_relight = load_relight_model('pretrained_models/CroCoDiLight.pth', device)
     # Freeze all components - only the mapper will be trained
     croco_relight.freeze_components(encoder=True, decoder=True, extractor=True, entangler=True)
 
     mapper_model = LightingMapper(patch_size=croco_relight.croco.enc_embed_dim, extractor_depth=8, rope=croco_relight.croco.rope).to(device)
     # Load the entangler weights as initialization
-    if not os.path.exists('pretrained_models/entangler_ckpt.pth'):
-        torch.save(croco_relight.lighting_entangler.state_dict(), 'pretrained_models/entangler_ckpt.pth')
-    entangler_ckpt = torch.load('pretrained_models/entangler_ckpt.pth', 'cpu')
+    if not os.path.exists('pretrained_models/CroCoDiLight_entangler_init.pth'):
+        torch.save(croco_relight.lighting_entangler.state_dict(), 'pretrained_models/CroCoDiLight_entangler_init.pth')
+    entangler_ckpt = torch.load('pretrained_models/CroCoDiLight_entangler_init.pth', 'cpu')
     mapper_model.load_mapper(entangler_ckpt)
     mapper_optim = torch.optim.Adam(mapper_model.latent_mapper.parameters(), lr=lr)
 
     run = wandb.init(
         entity="your-wandb-entity",  # replace with your wandb entity
-        project=f"croco-{mapper_type}-mapper-train",
+        project=f"CroCoDiLight-{mapper_type}-mapper-train",
         config={"epochs": epochs, "learning_rate": lr, "batch_size": batch_size},
         notes="Train albedo estimation" if mapper_type == "albedo" else "Train shadow removal with INS",
     )
@@ -204,9 +201,9 @@ def train_mapper(mapper_type: str):
             run.log({"mean_val_img_loss": mean_val_img_loss, "mean_val_dyn_loss": mean_val_dyn_loss})
 
         if epoch % 10 == 0:
-            torch.save(mapper_model.state_dict(), f'pretrained_models/{mapper_type}_mapper.pth')
+            torch.save(mapper_model.state_dict(), f'pretrained_models/CroCoDiLight_{mapper_type}_mapper.pth')
 
-    torch.save(mapper_model.state_dict(), f'pretrained_models/{mapper_type}_mapper.pth')
+    torch.save(mapper_model.state_dict(), f'pretrained_models/CroCoDiLight_{mapper_type}_mapper.pth')
     run.finish()
 
 

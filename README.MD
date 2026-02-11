@@ -1,6 +1,10 @@
 # CroCoDiLight
 
-## Environment Setup
+CroCo-based Disentangled Lighting for image delighting and relighting. Extends CroCo (Cross-view Completion) to separate
+content from illumination in latent space, enabling shadow removal, albedo estimation, lighting transfer, and
+interpolation.
+
+## Setup
 
 1. Create a conda environment and install dependencies:
 
@@ -11,97 +15,137 @@ conda install pytorch torchvision -c pytorch
 pip install -e .
 ```
 
-2. (Optional) Compile CUDA kernels for RoPE positional embeddings. This provides GPU acceleration but is not required --
-   a pure Python fallback will be used automatically if the compiled version is not available.
-
-First, install the CUDA development headers and build tools into the conda environment. You can also install the full
-`cuda-toolkit` package instead of `cuda-cudard-dev` and `cuda-nvcc`.
+2. (Optional) Compile CUDA kernels for RoPE positional embeddings. A pure Python fallback is used automatically if these
+   are not compiled. It is possible to install `cuda-toolkit` instead of `cuda-cudart-dev` and `cuda-nvcc` if you wanted
+   a complete CUDA installation. The system CUDA installation should also work but has not been tested.
 
 ```bash
-conda install cuda-cudart-dev cuda-nvcc ninja -c nvidia 
-```
-
-Then compile the CUDA RoPE positional embeddings:
-
-```bash
+conda install cuda-cudart-dev cuda-nvcc ninja -c nvidia
 cd croco/models/curope/
 python setup.py build_ext --inplace
 cd ../../../
 ```
 
-3. Download the CroCo v2 pre-trained weights:
+## Pretrained Models
 
-```bash
-mkdir -p pretrained_models/
-wget https://download.europe.naverlabs.com/ComputerVision/CroCo/CroCo_V2_ViTLarge_BaseDecoder.pth -P pretrained_models/
-```
+All weights should be placed in `pretrained_models/`.
 
-4. Log in to Weights & Biases (used for training visualisation):
+### For inference
 
-```bash
-wandb login
-```
+| File                             | Required for          | Description                                                                                                           |
+|----------------------------------|-----------------------|-----------------------------------------------------------------------------------------------------------------------|
+| `CroCoDiLight.pth`               | All inference scripts | Full CroCoDiLight model (includes the CroCo encoder, single-view decoder, lighting extractor, and lighting entangler) |
+| `CroCoDiLight_shadow_mapper.pth` | Shadow removal        | Lighting mapper trained for shadow removal                                                                            |
+| `CroCoDiLight_albedo_mapper.pth` | Albedo estimation     | Lighting mapper trained for intrinsic image decomposition                                                             |
 
-## Training
+`CroCoDiLight.pth` is the base model needed by every inference and evaluation script. The mapper weights are only needed
+for their respective tasks (shadow removal or albedo estimation). Lighting swap, freeze, transfer, and interpolation use
+the base model only.
 
-There are three main stages to training, one of them repeated.
+### For training
 
-### Step 1: Pretrain the single-view decoder
+| File                                | Used in     | Description                                                                                                                                                                                                                                                                           |
+|-------------------------------------|-------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `CroCo_V2_ViTLarge_BaseDecoder.pth` | Steps 1 & 2 | Original CroCo v2 ViT-Large weights from [Weinzaepfel et al.](https://github.com/naver/croco) (includes the cross-view decoder, though only the encoder is used). Download from [here](https://download.europe.naverlabs.com/ComputerVision/CroCo/CroCo_V2_ViTLarge_BaseDecoder.pth). |
+| `CroCoDiLight_decoder.pth`          | Step 2      | Single-view decoder pretrained on ImageNet reconstruction (output of training step 1). Available for download but not needed for inference -- its weights are embedded in `CroCoDiLight.pth`.                                                                                         |
 
-```bash
-python scripts/pretrain_relight_decoder.py
-```
+## Inference
 
-### Step 2: Train the relighting model
-
-Train the base model with the Delighting and Relighting transformers:
-
-```bash
-python scripts/train_relight_model.py
-```
-
-### Step 3: Train task-specific mappers
-
-Edit the function call at the end of `scripts/train_lighting_mapper.py` to be either `"shadow"` or `"albedo"` depending
-on which latent transformation model you want to train. Then run:
-
-```bash
-python scripts/train_lighting_mapper.py
-```
-
-## Evaluation
-
-### Albedo estimation (IIW)
-
-```bash
-python scripts/iiw.py
-python scripts/whdr_full_evaluation.py
-```
-
-The first command estimates albedo on the IIW dataset and calculates WHDR across the whole dataset. The second takes the
-precomputed results and calculates WHDR on the test set.
+All inference scripts accept `--help` for full usage and `--device` for GPU selection. Input can be a single image or a
+folder.
 
 ### Shadow removal
 
 ```bash
-python scripts/shadow_removal.py
-python scripts/shadow_eval.py "data/sr_outputs"
+python scripts/inference/shadow_removal.py --input <image_or_folder> --output <image_or_folder>
 ```
 
-The first runs shadow removal on all the specified datasets, and the second evaluates all of the metrics.
+### Albedo estimation
 
-## Inference
+```bash
+python scripts/inference/albedo_estimation.py --input <image_or_folder> --output <image_or_folder>
+```
 
-`scripts/interpolate_lighting.py` and `scripts/swap_lighting.py` demonstrate ways of working with the model for
-relighting tasks.
+### Swap lighting between two images
 
-## Pretrained Models
+```bash
+python scripts/inference/swap_lighting.py --image1 a.png --image2 b.png --output-dir out/
+```
 
-The following model files are expected in `pretrained_models/`:
+### Freeze lighting (fixed lighting, varying content)
 
-| File                                | Description                                                                             |
-|-------------------------------------|-----------------------------------------------------------------------------------------|
-| `CroCo_V2_ViTLarge_BaseDecoder.pth` | Base CroCo v2 model (download above)                                                    |
-| `croco_decoder_pretrained.pth`      | Pretrained decoder (output of step 1)                                                   |
-| `croco_relight_full.pth`            | Full relighting model with CroCo encoder kwargs (output of step 2)                      |
-| `{task}_mapper.pth`                 | Task-specific mappers, e.g. `shadow_mapper.pth`, `albedo_mapper.pth` (output of step 3) |
+```bash
+python scripts/inference/freeze_lighting.py --reference ref.png --input <folder> --output <folder>
+```
+
+### Transfer lighting (fixed content, varying lighting)
+
+```bash
+python scripts/inference/transfer_lighting.py --reference ref.png --input <folder> --output <folder>
+```
+
+### Interpolate lighting between two frames
+
+```bash
+python scripts/inference/interpolate_lighting.py --frame-a a.png --frame-b b.png --output-dir out/ --steps 5
+```
+
+## Training
+
+Training requires [Weights & Biases](https://wandb.ai) for logging (`wandb login`). See
+[datasets/DATASETS.md](datasets/DATASETS.md) for required datasets and expected directory layouts.
+
+### Step 1: Pretrain the single-view decoder
+
+```bash
+python scripts/training/pretrain_relight_decoder.py
+```
+
+### Step 2: Train the relighting model
+
+```bash
+python scripts/training/train_relight_model.py
+```
+
+### Step 3: Train task-specific mappers
+
+Edit the mapper type (`"shadow"` or `"albedo"`) at the bottom of the script, then run:
+
+```bash
+python scripts/training/train_lighting_mapper.py
+```
+
+## Evaluation
+
+### Shadow removal
+
+Run inference on each shadow dataset, then compute metrics (MAE, RMSE, LPIPS, PSNR, SSIM):
+
+```bash
+python scripts/inference/shadow_removal.py --input ./datasets/SRD/test/shadow/ --output ./outputs/SRD/
+python scripts/inference/shadow_removal.py --input ./datasets/ISTD+/test/test_A/ --output ./outputs/ISTD+/
+python scripts/inference/shadow_removal.py --input ./datasets/WSRD+/val/input/ --output ./outputs/WSRD+/
+python scripts/inference/shadow_removal.py --input ./datasets/INS/test/origin/ --output ./outputs/INS/
+
+python scripts/evaluation/shadow_metrics.py --predictions ./outputs --datasets-root ./datasets
+```
+
+The evaluation script can also be used to evaluate other methods by pointing `--predictions` at any folder
+with the same structure (`SRD/`, `ISTD+/`, `WSRD+/`, `INS/` subfolders containing predicted shadow-free images).
+
+See [datasets/DATASETS.md](datasets/DATASETS.md) for download links and expected directory layouts.
+
+### Albedo estimation (IIW)
+
+Run inference and compute WHDR in one pass:
+
+```bash
+python scripts/evaluation/iiw_predict_and_score.py --iiw-root ./datasets/IIW/
+```
+
+Or separately, first predict reflectance images, then score them:
+
+```bash
+python scripts/inference/albedo_estimation.py --input ./datasets/IIW/ --output ./datasets/IIW/
+python scripts/evaluation/albedo_whdr.py --iiw-root ./datasets/IIW/
+```

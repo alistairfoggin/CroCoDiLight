@@ -6,10 +6,6 @@ from torch.utils.data import DataLoader, ConcatDataset
 
 import torchvision.transforms.v2 as transforms
 
-import sys
-import os
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
 from lighting.dataloader import BigTimeDataset, DualDirectoryDataset, HypersimDataset, CGIntrinsicDataset, \
     ScenePairDataset
 from lighting.relighting_modules import img_mean, img_std
@@ -22,9 +18,9 @@ if __name__ == "__main__":
 
     run = wandb.init(
         entity="your-wandb-entity",  # replace with your wandb entity
-        project="croco-relighting-train",
+        project="CroCoDiLight-train",
         config={"epochs": epochs, "learning_rate": lr, "batch_size": batch_size},
-        notes="bigtime+mit_illumination+srd+wsrd+istd+ins+hypersim+cgi 448x448 LPIPS+MSE",
+        notes="bigtime+mit_illumination+srd+wsrd+istd+hypersim+cgi 448x448 LPIPS+MSE",
     )
 
     device = torch.device('cuda:0' if torch.cuda.is_available() and torch.cuda.device_count() > 0 else 'cpu')
@@ -34,26 +30,24 @@ if __name__ == "__main__":
     croco_decode = CroCoDecode(**croco_kwargs).to(device)
     croco_decode.load_state_dict(ckpt['model'])
     croco_decode.setup()
-    decode_ckpt = torch.load('pretrained_models/croco_decoder_pretrained.pth', 'cpu')
+    decode_ckpt = torch.load('pretrained_models/CroCoDiLight_decoder.pth', 'cpu')
     croco_decode.load_state_dict(decode_ckpt)
     croco_relight = RelightModule(croco_decode).to(device)
     # Freeze encoder and pretrained decoder, train only lighting extractor + entangler
     croco_relight.freeze_components(encoder=True, decoder=True, extractor=False, entangler=False)
     croco_optim = torch.optim.Adam(croco_relight.parameters(), lr=lr)
 
-    base_root_dir = "./datasets/relighting/" # replace with your dataset directory path
-    root_dir_bigtime = base_root_dir + "phoenix/S6/zl548/AMOS/BigTime_v1/"
-    root_dir_360 = base_root_dir + "time360/result/"
-    root_dir_mit_illumination = base_root_dir + "mit/"
-    root_dir_mit_illumination_test = base_root_dir + "mit_test/"
+    base_root_dir = "./datasets/" # replace with your dataset directory path
+    root_dir_bigtime = base_root_dir + "BigTime/phoenix/S6/zl548/AMOS/BigTime_v1/"
+    root_dir_mit_illumination = base_root_dir + "Multi_Illumination/train/"
+    root_dir_mit_illumination_test = base_root_dir + "Multi_Illumination/test/"
 
-    root_dir_srd = base_root_dir + "srd/SRD/"
-    root_dir_wsrd = base_root_dir + "wsrd_plus/"
-    root_dir_istd = base_root_dir + "ISTD_Dataset/"
-    root_dir_ins = base_root_dir + "INS/"
+    root_dir_srd = base_root_dir + "SRD/"
+    root_dir_wsrd = base_root_dir + "WSRD+/"
+    root_dir_istd = base_root_dir + "ISTD+/"
 
-    root_dir_hypersim = base_root_dir + "ml-hypersim/"
-    root_dir_cgi = base_root_dir + "cgi/intrinsics_final/"
+    root_dir_hypersim = base_root_dir + "ML-HyperSim/"
+    root_dir_cgi = base_root_dir + "CGIntrinsics/"
 
     res = 448
     transform = transforms.Compose([
@@ -76,13 +70,11 @@ if __name__ == "__main__":
     dataset_wsrd = DualDirectoryDataset(root_dir_wsrd, "input", "gt", transform=train_transform, split="train")
     dataset_istd_plus = DualDirectoryDataset(root_dir_istd, "train_A", "train_C_fixed_ours", transform=train_transform,
                                              split="train")
-    dataset_ins = DualDirectoryDataset(root_dir_ins, "origin", "shadow_free", transform=train_transform, split="train")
-
     # Albedo
     dataset_hypersim = HypersimDataset(root_dir_hypersim, split="train", transform=train_transform)
     dataset_cgi = CGIntrinsicDataset(root_dir_cgi, transform=train_transform)
 
-    dataset = ConcatDataset([dataset_bigtime, dataset_mit, dataset_srd, dataset_wsrd, dataset_ins, dataset_istd_plus, dataset_hypersim, dataset_cgi])
+    dataset = ConcatDataset([dataset_bigtime, dataset_mit, dataset_srd, dataset_wsrd, dataset_istd_plus, dataset_hypersim, dataset_cgi])
     print("Number of image pairs:", len(dataset))
     dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True, num_workers=4)
 
@@ -156,7 +148,7 @@ if __name__ == "__main__":
                 run.log({"train_images": wandb_img}, step=step)
             if i == 0:
                 torch.save({'croco_kwargs': croco_kwargs, 'model': croco_relight.state_dict()},
-                           "pretrained_models/croco_relight_full.pth")
+                           "pretrained_models/CroCoDiLight.pth")
 
         # Validation
         val_relight_losses = []
@@ -229,5 +221,5 @@ if __name__ == "__main__":
             f"Epoch {epoch}, Validation relighting loss: {val_relight_loss}, Validation delight loss: {val_delight_loss}")
 
     torch.save({'croco_kwargs': croco_kwargs, 'model': croco_relight.state_dict()},
-               "pretrained_models/croco_relight_full.pth")
+               "pretrained_models/CroCoDiLight.pth")
     run.finish()

@@ -10,10 +10,6 @@ import torchvision.transforms.functional as F
 from torchvision.datasets import ImageNet
 from torchvision.utils import make_grid
 
-import sys
-import os
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
 from lighting.relighting_modules import img_mean, img_std
 from lighting.relighting_model import CroCoDecode
 
@@ -35,7 +31,7 @@ if __name__ == "__main__":
 
     run = wandb.init(
         entity="your-wandb-entity",  # replace with your wandb entity
-        project="croco-relighting-pretrain",
+        project="CroCoDiLight-pretrain",
         config={"epochs": epochs, "learning_rate": lr, "batch_size": batch_size},
         notes="224 resolution with LPIPS AlexNet",
     )
@@ -62,7 +58,7 @@ if __name__ == "__main__":
     img_loss_fn.to(device)
     l2_loss = torch.nn.MSELoss()
 
-    imagenet_dir = "./data/imagenet"  # replace with your ImageNet directory path
+    imagenet_dir = "./datasets/ImageNet"  # replace with your ImageNet directory path
     train_dataset = ImageNet(imagenet_dir, split="train", transform=transform)
     val_dataset = ImageNet(imagenet_dir, split="val", transform=transform)
     train_dataloader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True, num_workers=6)
@@ -93,7 +89,7 @@ if __name__ == "__main__":
                 wandb_imgs = wandb.Image(img_array, caption="Top: Ground Truth, Bottom: Reconstruction")
                 run.log({"train_images": wandb_imgs}, step=i)
             if i % 1000 == 0:
-                torch.save(croco.state_dict(), "./pretrained_models/croco_decoder_pretrained.pth")
+                torch.save(croco.state_dict(), "./pretrained_models/CroCoDiLight_decoder.pth")
 
         val_loss = []
         for j, (img_batch, _) in enumerate(val_dataloader):
@@ -117,5 +113,5 @@ if __name__ == "__main__":
         print(f"Epoch {epoch} validation loss: {loss.item():.4f}")
 
     run.log({"epoch": epoch, "loss": loss.item()}, step=i)
-    torch.save(croco.state_dict(), "pretrained_models/croco_decoder_pretrained.pth")
+    torch.save(croco.state_dict(), "pretrained_models/CroCoDiLight_decoder.pth")
     run.finish()

@@ -27,6 +27,8 @@ ENV/
 pretrained_models/*.pth
 pretrained_models/*.pt
 !pretrained_models/.gitkeep
+datasets/*
+!datasets/DATASETS.md
 data/
 outputs/
 wandb/
