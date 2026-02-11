@@ -1,0 +1,37 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# Virtual environments
+venv/
+.venv/
+ENV/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Project specific
+pretrained_models/*.pth
+pretrained_models/*.pt
+!pretrained_models/.gitkeep
+data/
+outputs/
+wandb/
+*.log
+
+# OS
+.DS_Store
+Thumbs.db

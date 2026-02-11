@@ -1,0 +1,37 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "crocodilight"
+version = "1.0.0"
+description = "CroCoDiLight image delighting and relighting"
+readme = "README.MD"
+requires-python = ">=3.9"
+license = {text = "CC BY-NC-SA 4.0"}
+authors = [
+    {name = "Alistair Foggin", email = "alistair.foggin@york.ac.uk"}
+]
+dependencies = [
+    "torch>=2.0.0",
+    "torchvision>=0.15.0",
+    "numpy",
+    "pillow",
+    "opencv-python",
+    "lpips",
+    "blended-tiling",
+    "polars",
+    "tqdm",
+    "einops",
+    "matplotlib",
+    "scikit-image",
+    "wandb",
+]
+
+[project.optional-dependencies]
+dev = ["pytest", "black", "isort"]
+habitat = ["habitat-sim", "quaternion"]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["lighting*", "evaluations*"]
