@@ -13,7 +13,7 @@ import os
 import torch
 
 from crocodilight.inference import (
-    get_device, load_model, get_transform, extract_features,
+    get_device, load_model, extract_features,
     save_tensor_image,
 )
 
@@ -31,14 +31,13 @@ def main():
 
     device = get_device(args.device)
     model = load_model(args.model, device)
-    transform = get_transform()
     img_info = {"height": 448, "width": 448}
     os.makedirs(args.output_dir, exist_ok=True)
 
     static_a, dyn_a, pos_a, tiling_module_a = extract_features(
-        model, args.frame_a, device, transform, resize=args.resize)
+        model, args.frame_a, device, resize=args.resize)
     _, dyn_b, _, _ = extract_features(
-        model, args.frame_b, device, transform, resize=args.resize)
+        model, args.frame_b, device, resize=args.resize)
 
     for idx, alpha in enumerate(torch.linspace(0, 1, args.steps)):
         dyn_interp = dyn_a * (1 - alpha) + dyn_b * alpha

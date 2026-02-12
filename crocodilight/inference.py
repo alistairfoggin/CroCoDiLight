@@ -122,6 +122,44 @@ def save_tensor_image(tensor, path):
     cv2.imwrite(str(path), img_np)
 
 
+def pil_to_tensor(image, device=None):
+    """Convert a PIL Image to a normalised (1, C, H, W) tensor.
+
+    Applies ImageNet normalisation matching the existing transform pipeline.
+
+    Args:
+        image: PIL Image (RGB).
+        device: torch.device to place tensor on, or None for CPU.
+
+    Returns:
+        torch.Tensor of shape (1, C, H, W), ImageNet-normalised.
+    """
+    image = image.convert('RGB')
+    transform = get_transform()
+    tensor = transform(image).unsqueeze(0)
+    if device is not None:
+        tensor = tensor.to(device)
+    return tensor
+
+
+def tensor_to_pil(tensor):
+    """Convert a model output tensor back to a PIL Image.
+
+    Denormalises using rescale_image() and converts to uint8 PIL.
+
+    Args:
+        tensor: Image tensor of shape (1, C, H, W) or (C, H, W).
+
+    Returns:
+        PIL Image (RGB).
+    """
+    if tensor.dim() == 3:
+        tensor = tensor.unsqueeze(0)
+    img = rescale_image(tensor)[0].cpu().detach()
+    img_np = (img.permute(1, 2, 0).numpy() * 255).astype('uint8')
+    return Image.fromarray(img_np)
+
+
 def pad_to_min_size(img_tensor, min_size=448):
     """Pad image with zeros if smaller than min_size.
 
@@ -158,15 +196,35 @@ def unpad(tensor, pad_info):
     return tensor[:, :, :pad_info['original_h'], :pad_info['original_w']]
 
 
-def extract_features(model, image_path, device, transform, resize=None,
+def _extract_features_from_tensor(model, img, device, tile_size=448, tile_overlap=0.2):
+    """Core feature extraction from a pre-processed (1, C, H, W) tensor.
+
+    Args:
+        model: Loaded RelightModule.
+        img: Image tensor of shape (1, C, H, W), already transformed/normalised.
+        device: torch.device.
+        tile_size: Tile size for blended tiling.
+        tile_overlap: Overlap fraction between tiles.
+
+    Returns:
+        (static, dyn, pos, tiling_module) feature tensors.
+    """
+    tiling_module = TilingModule(tile_size=tile_size, tile_overlap=tile_overlap, base_size=img.shape[2:])
+    img = tiling_module.split_into_tiles(img).to(device)
+    with torch.no_grad():
+        feat, pos, _ = model.croco._encode_image(img, do_mask=False, return_all_blocks=False)
+        static, dyn, _ = model.lighting_extractor(feat, pos)
+    return static, dyn, pos, tiling_module
+
+
+def extract_features(model, image_path, device, resize=None,
                      tile_size=448, tile_overlap=0.2):
-    """Extract static/dynamic features from image using tiling.
+    """Extract static/dynamic features from image file using tiling.
 
     Args:
         model: Loaded RelightModule.
         image_path: Path to image file.
         device: torch.device.
-        transform: Image transform to apply.
         resize: Optional resize dimension.
         tile_size: Tile size for blended tiling.
         tile_overlap: Overlap fraction between tiles.
@@ -174,15 +232,32 @@ def extract_features(model, image_path, device, transform, resize=None,
     Returns:
         (static, dyn, pos, tiling_module) feature tensors.
     """
-    img = transform(Image.open(image_path).convert('RGB')).unsqueeze(0)
+    image = Image.open(image_path).convert('RGB')
+    return extract_features_pil(model, image, device, resize=resize,
+                                tile_size=tile_size, tile_overlap=tile_overlap)
+
+
+def extract_features_pil(model, image, device, resize=None,
+                         tile_size=448, tile_overlap=0.2):
+    """Extract static/dynamic features from a PIL Image using tiling.
+
+    Args:
+        model: Loaded RelightModule.
+        image: PIL Image (any mode, converted to RGB internally).
+        device: torch.device.
+        resize: Optional resize dimension.
+        tile_size: Tile size for blended tiling.
+        tile_overlap: Overlap fraction between tiles.
+
+    Returns:
+        (static, dyn, pos, tiling_module) feature tensors.
+    """
+    image = image.convert('RGB')
+    transform = get_transform()
+    img = transform(image).unsqueeze(0)
     if resize is not None:
         img = transforms.Resize(resize)(img)
-    tiling_module = TilingModule(tile_size=tile_size, tile_overlap=tile_overlap, base_size=img.shape[2:])
-    img = tiling_module.split_into_tiles(img).to(device)
-    with torch.no_grad():
-        feat, pos, _ = model.croco._encode_image(img, do_mask=False, return_all_blocks=False)
-        static, dyn, dyn_pos = model.lighting_extractor(feat, pos)
-    return static, dyn, pos, tiling_module
+    return _extract_features_from_tensor(model, img, device, tile_size, tile_overlap)
 
 
 def process_input(input_path, output_path, process_fn):

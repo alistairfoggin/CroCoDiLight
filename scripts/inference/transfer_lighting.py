@@ -12,7 +12,7 @@ import argparse
 import torch
 
 from crocodilight.inference import (
-    get_device, load_model, get_transform, extract_features,
+    get_device, load_model, extract_features,
     save_tensor_image, process_input,
 )
 
@@ -29,14 +29,13 @@ def main():
 
     device = get_device(args.device)
     model = load_model(args.model, device)
-    transform = get_transform()
     img_info = {"height": 448, "width": 448}
 
     # Extract content features from reference
-    static_ref, _, pos_ref, _ = extract_features(model, args.reference, device, transform, resize=args.resize)
+    static_ref, _, pos_ref, _ = extract_features(model, args.reference, device, resize=args.resize)
 
     def process(img_path, out_path):
-        _, dyn, _, tiling_module = extract_features(model, img_path, device, transform, resize=args.resize)
+        _, dyn, _, tiling_module = extract_features(model, img_path, device, resize=args.resize)
         with torch.no_grad():
             feat = model.lighting_entangler(static_ref, pos_ref, dyn)
             out_img = model.croco.decode(feat, pos_ref, img_info)
