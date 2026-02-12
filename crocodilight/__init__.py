@@ -4,18 +4,6 @@ CroCoDiLight - CroCo-based Delighting and Relighting
 Extends CroCo (Cross-view Completion) for image relighting tasks.
 """
 
-import os
-import sys
-
-_project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-# Add project root so `from croco.models.*` resolves (croco is a namespace package without __init__.py)
-if _project_root not in sys.path:
-    sys.path.insert(0, _project_root)
-# Add croco submodule dir so its internal bare `from models.*` imports resolve
-_croco_dir = os.path.join(_project_root, 'croco')
-if _croco_dir not in sys.path:
-    sys.path.insert(0, _croco_dir)
-
 from crocodilight.relighting_modules import (
     LightingExtractor,
     LightingEntangler,

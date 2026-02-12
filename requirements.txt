@@ -1,3 +1,4 @@
+croco @ git+https://github.com/naver/croco.git@croco_module
 torch>=2.0.0
 torchvision>=0.15.0
 numpy

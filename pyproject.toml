@@ -13,6 +13,7 @@ authors = [
     {name = "Alistair Foggin", email = "alistair.foggin@york.ac.uk"}
 ]
 dependencies = [
+    "croco @ git+https://github.com/naver/croco.git@croco_module",
     "torch>=2.0.0",
     "torchvision>=0.15.0",
     "numpy",
@@ -27,6 +28,9 @@ dependencies = [
     "scikit-image",
     "wandb",
 ]
+
+[project.optional-dependencies]
+curope = ["curope @ git+https://github.com/naver/croco.git@croco_module#subdirectory=curope"]
 
 [tool.setuptools.packages.find]
 where = ["."]

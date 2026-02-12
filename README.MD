@@ -6,24 +6,29 @@ interpolation.
 
 ## Setup
 
-1. Create a conda environment and install dependencies:
+Create a conda environment:
 
 ```bash
 conda create -n croco python=3.10 -y
 conda activate croco
 conda install pytorch torchvision -c pytorch
-pip install -e .
 ```
 
-2. (Optional) Compile CUDA kernels for RoPE positional embeddings. A pure Python fallback is used automatically if these
-   are not compiled. It is possible to install `cuda-toolkit` instead of `cuda-cudart-dev` and `cuda-nvcc` if you wanted
-   a complete CUDA installation. The system CUDA installation should also work but has not been tested.
+Install with curope CUDA kernels for faster RoPE positional embeddings. You can install `cuda-toolkit`
+instead of `cuda-cudart-dev` and `cuda-nvcc` if you prefer a complete CUDA installation. A system CUDA
+installation should also work but has not been tested. The curope CUDA kernels compile for all
+architectures and may take some time. To target a specific architecture, set `TORCH_CUDA_ARCH_LIST`.
+If you have a custom CUDA installation, set `CUDA_HOME` accordingly:
 
 ```bash
 conda install cuda-cudart-dev cuda-nvcc ninja -c nvidia
-cd croco/models/curope/
-python setup.py build_ext --inplace
-cd ../../../
+pip install -e ".[curope]"
+```
+
+Or install without curope (a pure PyTorch fallback is used automatically):
+
+```bash
+pip install -e .
 ```
 
 ## Pretrained Models
