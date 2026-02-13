@@ -13,6 +13,7 @@ import argparse
 import io
 import os
 import zipfile
+from pathlib import Path
 
 import gradio as gr
 import torch
@@ -65,40 +66,57 @@ def load_freeze_model(model_path="pretrained_models", device=None):
     return model, device
 
 
-def _relight_single(model, device, ref_image, content_image):
-    """Apply lighting from ref_image to content_image. Returns PIL Image."""
-    _, dyn_ref, _, _ = extract_features_pil(model, ref_image, device)
-    static, _, pos, tiling_module = extract_features_pil(model, content_image, device)
+def _relight_images(model, device, ref_image: Image.Image, content_images: list[Image.Image], resize=None, progress=None) -> list[Image.Image]:
+    """Apply lighting from ref_image to content_image(s). Returns PIL Image."""
+    out_pil_imgs = []
+    total = len(content_images)
     with torch.no_grad():
-        feat = model.lighting_entangler(static, pos, dyn_ref)
-        img_info = {"height": 448, "width": 448}
-        out_img = model.croco.decode(feat, pos, img_info)
-        out_img = tiling_module.rebuild_with_masks(out_img)
-    return tensor_to_pil(out_img)
+        _, dyn_ref, _, _ = extract_features_pil(model, ref_image, device, resize=resize)
+        for i, content_image in enumerate(content_images):
+            if progress is not None:
+                progress((i, total), desc=f"Relighting image {i + 1}/{total}")
+            static, _, pos, tiling_module = extract_features_pil(model, content_image, device, resize=resize)
+            feat = model.lighting_entangler(static, pos, dyn_ref)
+            img_info = {"height": 448, "width": 448}
+            out_img = model.croco.decode(feat, pos, img_info)
+            out_img = tiling_module.rebuild_with_masks(out_img)
+            pil_img = tensor_to_pil(out_img)
+            out_pil_imgs.append(pil_img)
+    return out_pil_imgs
 
 
 def build_freeze_ui(model, device):
     """Build the Lighting Freeze tab UI. Returns a gr.Blocks component."""
 
     @gpu_decorator
-    def run_freeze_single(ref_image, content_image):
+    def run_freeze_single(ref_image, content_image, resize):
         if ref_image is None:
             raise gr.Error("Please upload a lighting reference image.")
         if content_image is None:
             raise gr.Error("Please upload a content image.")
-        return _relight_single(model, device, ref_image, content_image)
+        resize = int(resize) if resize is not None and resize > 0 else None
+        try:
+            return _relight_images(model, device, ref_image, content_image, resize=resize)
+        except torch.cuda.OutOfMemoryError:
+            torch.cuda.empty_cache()
+            raise gr.Error("GPU ran out of memory. Please try smaller images.")
 
-    def run_freeze_batch(ref_image, content_images):
+    def run_freeze_batch(ref_image, content_images, resize, progress=gr.Progress()):
         if ref_image is None:
             raise gr.Error("Please upload a lighting reference image.")
         if not content_images:
             raise gr.Error("Please upload at least one content image.")
+        resize = int(resize) if resize else None
 
-        results = []
-        for img_path in content_images:
-            content_img = Image.open(img_path).convert("RGB")
-            result = _relight_single(model, device, ref_image, content_img)
-            results.append(result)
+        try:
+            content_pil_images = [Image.open(img_path).convert("RGB") for img_path in content_images]
+            results = _relight_images(model, device, ref_image, content_pil_images, resize=resize,
+                                      progress=progress)
+        except torch.cuda.OutOfMemoryError:
+            torch.cuda.empty_cache()
+            raise gr.Error(
+                "GPU ran out of memory. Please try fewer or smaller images."
+            )
 
         # Create downloadable zip
         zip_buffer = io.BytesIO()
@@ -106,7 +124,7 @@ def build_freeze_ui(model, device):
             for i, img in enumerate(results):
                 img_buffer = io.BytesIO()
                 img.save(img_buffer, format="PNG")
-                zf.writestr(f"relit_{i:04d}.png", img_buffer.getvalue())
+                zf.writestr(Path(content_images[i]).name, img_buffer.getvalue())
         zip_buffer.seek(0)
         zip_path = os.path.join(os.path.dirname(__file__), "relit_batch.zip")
         with open(zip_path, "wb") as f:
@@ -128,6 +146,8 @@ def build_freeze_ui(model, device):
                 label="Mode",
             )
 
+        resize_input = gr.Number(value=None, label="Resize (leave empty for original size)", precision=0)
+
         # --- Single image mode ---
         with gr.Group(visible=True) as single_group:
             with gr.Row():
@@ -137,7 +157,7 @@ def build_freeze_ui(model, device):
             single_btn = gr.Button("Apply Lighting", variant="primary")
             single_btn.click(
                 fn=run_freeze_single,
-                inputs=[ref_image, content_image],
+                inputs=[ref_image, content_image, resize_input],
                 outputs=single_output,
             )
 
@@ -156,7 +176,7 @@ def build_freeze_ui(model, device):
                 batch_btn = gr.Button("Apply Lighting (Batch)", variant="primary")
                 batch_btn.click(
                     fn=run_freeze_batch,
-                    inputs=[ref_image_batch, content_images_batch],
+                    inputs=[ref_image_batch, content_images_batch, resize_input],
                     outputs=[batch_gallery, batch_download],
                 )
 

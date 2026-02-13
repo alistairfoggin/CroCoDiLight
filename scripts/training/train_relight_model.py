@@ -148,7 +148,7 @@ if __name__ == "__main__":
                 run.log({"train_images": wandb_img}, step=step)
             if i == 0:
                 torch.save({'croco_kwargs': croco_kwargs, 'model': croco_relight.state_dict()},
-                           "pretrained_models/crocodilight.pth")
+                           "pretrained_models/CroCoDiLight.pth")
 
         # Validation
         val_relight_losses = []
@@ -221,5 +221,5 @@ if __name__ == "__main__":
             f"Epoch {epoch}, Validation relighting loss: {val_relight_loss}, Validation delight loss: {val_delight_loss}")
 
     torch.save({'croco_kwargs': croco_kwargs, 'model': croco_relight.state_dict()},
-               "pretrained_models/crocodilight.pth")
+               "pretrained_models/CroCoDiLight.pth")
     run.finish()

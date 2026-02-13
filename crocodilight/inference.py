@@ -93,19 +93,23 @@ def get_transform(resize=None, center_crop=None):
     return transforms.Compose(ops)
 
 
-def load_and_transform(image_path, transform, device):
+def load_and_transform(image_path, transform, device, resize=None):
     """Load image, apply transform, add batch dim, move to device.
 
     Args:
         image_path: Path to image file.
         transform: torchvision transform to apply.
         device: torch.device to move tensor to.
+        resize: Optional int to resize the image (applied after transform).
 
     Returns:
         torch.Tensor of shape (1, C, H, W).
     """
     img = Image.open(image_path).convert('RGB')
-    return transform(img).unsqueeze(0).to(device)
+    tensor = transform(img).unsqueeze(0).to(device)
+    if resize is not None:
+        tensor = transforms.Resize(resize)(tensor)
+    return tensor
 
 
 def save_tensor_image(tensor, path):
@@ -122,7 +126,7 @@ def save_tensor_image(tensor, path):
     cv2.imwrite(str(path), img_np)
 
 
-def pil_to_tensor(image, device=None):
+def pil_to_tensor(image, device=None, resize=None):
     """Convert a PIL Image to a normalised (1, C, H, W) tensor.
 
     Applies ImageNet normalisation matching the existing transform pipeline.
@@ -130,6 +134,7 @@ def pil_to_tensor(image, device=None):
     Args:
         image: PIL Image (RGB).
         device: torch.device to place tensor on, or None for CPU.
+        resize: Optional int to resize the image (applied after transform).
 
     Returns:
         torch.Tensor of shape (1, C, H, W), ImageNet-normalised.
@@ -137,6 +142,8 @@ def pil_to_tensor(image, device=None):
     image = image.convert('RGB')
     transform = get_transform()
     tensor = transform(image).unsqueeze(0)
+    if resize is not None:
+        tensor = transforms.Resize(resize)(tensor)
     if device is not None:
         tensor = tensor.to(device)
     return tensor

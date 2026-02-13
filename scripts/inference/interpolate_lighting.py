@@ -24,7 +24,7 @@ def main():
     parser.add_argument("--frame-b", required=True, help="Second frame")
     parser.add_argument("--output-dir", required=True, help="Output directory for interpolated frames")
     parser.add_argument("--steps", type=int, default=5, help="Number of interpolation steps")
-    parser.add_argument("--model", default="pretrained_models/crocodilight.pth", help="Model checkpoint path")
+    parser.add_argument("--model", default="pretrained_models/CroCoDiLight.pth", help="Model checkpoint path")
     parser.add_argument("--device", default=None, help="Device (e.g. cuda:0, cpu). Auto-detects if not set.")
     parser.add_argument("--resize", type=int, default=1024, help="Resize images before processing")
     args = parser.parse_args()

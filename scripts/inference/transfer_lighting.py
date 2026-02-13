@@ -22,7 +22,7 @@ def main():
     parser.add_argument("--reference", required=True, help="Reference image providing the content")
     parser.add_argument("--input", required=True, help="Input image or folder (provides lighting)")
     parser.add_argument("--output", required=True, help="Output image or folder")
-    parser.add_argument("--model", default="pretrained_models/crocodilight.pth", help="Model checkpoint path")
+    parser.add_argument("--model", default="pretrained_models/CroCoDiLight.pth", help="Model checkpoint path")
     parser.add_argument("--device", default=None, help="Device (e.g. cuda:0, cpu). Auto-detects if not set.")
     parser.add_argument("--resize", type=int, default=None, help="Resize images before processing")
     args = parser.parse_args()

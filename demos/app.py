@@ -18,11 +18,11 @@ import gradio as gr
 # Space directory.
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from shadow_removal import get_weight_path, build_shadow_ui  # noqa: E402
-from albedo_estimation import build_albedo_ui  # noqa: E402
-from freeze_lighting import build_freeze_ui  # noqa: E402
+from shadow_removal import get_weight_path, build_shadow_ui
+from albedo_estimation import build_albedo_ui
+from freeze_lighting import build_freeze_ui
 
-from crocodilight.inference import get_device, load_model, load_mapper  # noqa: E402
+from crocodilight.inference import get_device, load_model, load_mapper
 
 
 def load_all_models(model_path="pretrained_models", device=None):

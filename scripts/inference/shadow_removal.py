@@ -20,9 +20,10 @@ def main():
     parser = argparse.ArgumentParser(description="Remove shadows from images using crocodilight")
     parser.add_argument("--input", required=True, help="Input image or folder")
     parser.add_argument("--output", required=True, help="Output image or folder")
-    parser.add_argument("--model", default="pretrained_models/crocodilight.pth", help="Model checkpoint path")
+    parser.add_argument("--model", default="pretrained_models/CroCoDiLight.pth", help="Model checkpoint path")
     parser.add_argument("--mapper", default="pretrained_models/CroCoDiLight_shadow_mapper.pth", help="Shadow mapper weights path")
     parser.add_argument("--device", default=None, help="Device (e.g. cuda:0, cpu). Auto-detects if not set.")
+    parser.add_argument("--resize", type=int, default=None, help="Resize images before processing")
     args = parser.parse_args()
 
     device = get_device(args.device)
@@ -31,7 +32,7 @@ def main():
     transform = get_transform()
 
     def process(img_path, out_path):
-        img = load_and_transform(img_path, transform, device)
+        img = load_and_transform(img_path, transform, device, resize=args.resize)
         with torch.no_grad():
             result = model.apply_mapper(img, mapper, use_consistency=False)
         save_tensor_image(result, out_path)

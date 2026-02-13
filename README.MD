@@ -22,13 +22,18 @@ If you have a custom CUDA installation, set `CUDA_HOME` accordingly:
 
 ```bash
 conda install cuda-cudart-dev cuda-nvcc ninja -c nvidia
-pip install -e ".[curope]"
+pip install -e ".[curope]" --no-build-isolation
 ```
 
 Or install without curope (a pure PyTorch fallback is used automatically):
 
 ```bash
 pip install -e .
+```
+
+To run the gradio demos, you also need to run the following:
+```bash
+pip install -e ".[demos]"
 ```
 
 ## Pretrained Models

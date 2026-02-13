@@ -61,7 +61,7 @@ def train_mapper(mapper_type: str):
     dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True, num_workers=4)
 
     device = torch.device('cuda:0' if torch.cuda.is_available() and torch.cuda.device_count() > 0 else 'cpu')
-    croco_relight = load_relight_model('pretrained_models/crocodilight.pth', device)
+    croco_relight = load_relight_model('pretrained_models/CroCoDiLight.pth', device)
     # Freeze all components - only the mapper will be trained
     croco_relight.freeze_components(encoder=True, decoder=True, extractor=True, entangler=True)
 

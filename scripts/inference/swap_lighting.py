@@ -24,7 +24,7 @@ def main():
     parser.add_argument("--image1", required=True, help="First input image")
     parser.add_argument("--image2", default=None, help="Second input image (for swap mode)")
     parser.add_argument("--output-dir", required=True, help="Output directory")
-    parser.add_argument("--model", default="pretrained_models/crocodilight.pth", help="Model checkpoint path")
+    parser.add_argument("--model", default="pretrained_models/CroCoDiLight.pth", help="Model checkpoint path")
     parser.add_argument("--mapper", default=None, help="Mapper weights path (for single-image mode)")
     parser.add_argument("--device", default=None, help="Device (e.g. cuda:0, cpu). Auto-detects if not set.")
     parser.add_argument("--resize", type=int, default=448, help="Resize images to this size")
