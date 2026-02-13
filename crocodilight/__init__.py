@@ -5,9 +5,8 @@ Extends CroCo (Cross-view Completion) for image relighting tasks.
 """
 
 from crocodilight.relighting_modules import (
-    LightingExtractor,
-    LightingEntangler,
-    LightingDecoder,
+    DelightingTransformer,
+    RelightingTransformer,
 )
 from crocodilight.relighting_model import (
     CroCoDecode,

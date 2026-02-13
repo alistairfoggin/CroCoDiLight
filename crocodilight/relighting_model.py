@@ -4,7 +4,7 @@ import torch
 from torch import nn
 from blended_tiling import TilingModule
 
-from crocodilight.relighting_modules import LightingExtractor, LightingEntangler
+from crocodilight.relighting_modules import DelightingTransformer, RelightingTransformer
 from croco.models.blocks import Block
 from croco.models.croco import CroCoNet
 from croco.models.head_downstream import PixelwiseTaskWithDPT
@@ -111,7 +111,7 @@ class CroCoDecode(CroCoNet):
 class LightingMapper(nn.Module):
     def __init__(self, patch_size=1024, extractor_depth=8, rope=None):
         super(LightingMapper, self).__init__()
-        self.latent_mapper = LightingEntangler(patch_size=patch_size, extractor_depth=extractor_depth, rope=rope)
+        self.latent_mapper = RelightingTransformer(patch_size=patch_size, extractor_depth=extractor_depth, rope=rope)
 
     def freeze_mapper(self, do_freeze=True):
         self.latent_mapper.requires_grad_(not do_freeze)
@@ -128,8 +128,10 @@ class RelightModule(nn.Module):
     def __init__(self, croco: CroCoDecode):
         super(RelightModule, self).__init__()
         self.croco = croco
-        self.lighting_extractor = LightingExtractor(patch_size=croco.enc_embed_dim, extractor_depth=8, rope=croco.rope)
-        self.lighting_entangler = LightingEntangler(patch_size=croco.enc_embed_dim, extractor_depth=8, rope=croco.rope)
+        self.lighting_extractor = DelightingTransformer(patch_size=croco.enc_embed_dim, extractor_depth=8,
+                                                        rope=croco.rope)
+        self.lighting_entangler = RelightingTransformer(patch_size=croco.enc_embed_dim, extractor_depth=8,
+                                                        rope=croco.rope)
 
     def freeze_components(self, encoder=True, decoder=True, extractor=False, entangler=False):
         """
@@ -142,7 +144,7 @@ class RelightModule(nn.Module):
             entangler: If True, freeze the crocodilight entangler (default: False)
 
         Common configurations:
-            - Relighting training: freeze_components(True, False, False, False)
+            - Relighting training: freeze_components(True, False, False, True)
             - Inference only: freeze_components(True, True, True, True)
         """
         self.croco.freeze_encoder(encoder)
@@ -194,11 +196,13 @@ class RelightModule(nn.Module):
         mapped_feat = self.lighting_entangler(static, pos, mapped_dyn)
         mapped_img = self.croco.decode(mapped_feat, pos, img_info)
 
-
         mapped_img = tiling_module.rebuild_with_masks(mapped_img)
         return mapped_img if not return_dyn else (mapped_img, dyn)
 
     def apply_gt_mapper(self, img, gt_img):
+        """
+        This is only used for the Oracle Shadow Removal metric where you have the shadow removal GT image for reference.
+        """
         tiling_module = TilingModule(tile_size=448, tile_overlap=0.2, base_size=img.shape[2:])
         img_resized = tiling_module.split_into_tiles(img)
         gt_img_resized = tiling_module.split_into_tiles(gt_img)
