@@ -1,8 +1,9 @@
 # CroCoDiLight
 
-CroCo-based Disentangled Lighting for image delighting and relighting. Extends CroCo (Cross-view Completion) to separate
-content from illumination in latent space, enabling shadow removal, albedo estimation, lighting transfer, and
-interpolation.
+Disentangles illumination from scene content in CroCo (Cross-view Completion) latent representations. A learned lighting
+extractor separates each encoder embedding into a single lighting vector and lighting-invariant patch features, which can
+then be recombined with any target lighting. This enables shadow removal, albedo estimation, lighting transfer, and
+interpolation, trained on datasets two orders of magnitude smaller than the original CroCo pretraining.
 
 ## Setup
 
@@ -159,3 +160,33 @@ Or separately, first predict reflectance images, then score them:
 python scripts/inference/albedo_estimation.py --input ./datasets/IIW/ --output ./datasets/IIW/
 python scripts/evaluation/albedo_whdr.py --iiw-root ./datasets/IIW/
 ```
+
+## Citation
+
+If you use CroCoDiLight in your research, please cite:
+
+```bibtex
+@inproceedings{foggin2026crocodilight,
+  title={{CroCoDiLight}: Repurposing Cross-View Completion Encoders for Relighting},
+  author={Foggin, Alistair J and Smith, William A P},
+  booktitle={The Fourteenth International Conference on Learning Representations},
+  year={2026},
+  url={https://openreview.net/forum?id=GKvb3HCyNk}
+}
+```
+
+## License
+
+This project, including its source code, documentation, and pretrained model weights, is
+licensed under [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/). The
+pretrained weights are additionally subject to the license terms of the upstream training
+data documented in the [NOTICE](NOTICE) file.
+
+## Acknowledgements
+
+CroCoDiLight builds on [CroCo](https://github.com/naver/croco) (Weinzaepfel et al.),
+licensed under CC BY-NC-SA 4.0 by Naver Corporation.
+
+Model training was performed on the Viking cluster, a high performance compute facility
+provided by the University of York. We are grateful for computational support from the
+University of York, IT Services and the Research IT team.

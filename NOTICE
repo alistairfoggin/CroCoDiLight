@@ -1,0 +1,159 @@
+CroCoDiLight
+Copyright 2025-present Alistair Foggin
+
+This project contains subcomponents with separate copyright notices and license
+terms. The pretrained model weights are derived from upstream checkpoints and
+training datasets whose license terms are documented below. Both the source code
+and the pretrained weights are subject to these terms.
+
+
+=============================================================================
+PART 1: SOFTWARE COMPONENTS
+=============================================================================
+
+(1.A) CroCo
+https://github.com/naver/croco
+Copyright 2022-present Naver Corporation
+Licensed under CC BY-NC-SA 4.0
+https://creativecommons.org/licenses/by-nc-sa/4.0/legalcode
+
+CroCo itself contains subcomponents with separate licenses:
+
+  (1.A.i) facebookresearch/mae
+  https://github.com/facebookresearch/mae
+  Attribution-NonCommercial 4.0 International (CC BY-NC 4.0)
+  https://creativecommons.org/licenses/by-nc/4.0/legalcode
+
+  (1.A.ii) rwightman/pytorch-image-models
+  https://github.com/rwightman/pytorch-image-models
+  Apache License Version 2.0
+  https://www.apache.org/licenses/LICENSE-2.0
+
+CroCo pretrained checkpoints were trained using additional datasets documented in
+the CroCo repository (NOTICE_CHECKPOINTS), including Habitat-Sim HM3D, ScanNet,
+Replica, ReplicaCAD, ARKitScenes, MegaDepth, and 3D_Street_View, each under their
+own license terms.
+
+
+=============================================================================
+PART 2: DATASETS USED IN TRAINING
+=============================================================================
+
+The datasets listed below are not distributed with this project. They are referenced
+here for attribution and to inform users of the license terms that may apply to
+pretrained model checkpoints derived from these datasets.
+
+---
+
+(2.A) ImageNet (ILSVRC 2012)
+https://www.image-net.org/
+Used for: Pretraining single-view decoder (Step 1)
+License: Custom academic license (non-commercial research and educational use only)
+Copyright Stanford Vision Lab, Stanford University, Princeton University
+Terms: https://www.image-net.org/download.php
+
+---
+
+(2.B) MIT Multi-Illumination Dataset
+https://projects.csail.mit.edu/illumination/
+Used for: Training relighting model (Step 2), validation
+License: CC BY 4.0
+https://creativecommons.org/licenses/by/4.0/legalcode
+Citation: Murmann, Gharbi, Aittala, and Durand, "A Dataset of Multi-Illumination
+Images in the Wild", ICCV 2019.
+
+---
+
+(2.C) BigTime
+https://www.cs.cornell.edu/projects/bigtime/
+Used for: Training relighting model (Step 2)
+License: No public dataset license stated. Code is MIT-licensed.
+Citation: Li and Snavely, "Learning Intrinsic Image Decomposition from Watching
+the World", CVPR 2018.
+
+---
+
+(2.D) SRD (Shadow Removal Dataset)
+Used for: Training relighting model and shadow mapper (Steps 2 & 3), evaluation
+License: No public license stated.
+Citation: Qu, Tian, He, Tang, and Lau, "DeshadowNet: A Multi-Context Embedding
+Deep Network for Shadow Removal", CVPR 2017.
+
+---
+
+(2.E) ISTD / ISTD+
+https://github.com/DeepInsight-PCALab/ST-CGAN
+Used for: Training relighting model and shadow mapper (Steps 2 & 3), evaluation
+Copyright 2018 PCALab (NJUST)
+License: Non-commercial research only.
+Citation: Wang, Li, and Yang, "Stacked Conditional Generative Adversarial Networks
+for Jointly Learning Shadow Detection and Shadow Removal", CVPR 2018.
+
+Adjusted ground truth (ISTD+) provided by:
+https://github.com/cvlab-stonybrook/SID
+Citation: Le and Samaras, "Shadow Removal via Shadow Image Decomposition", ICCV 2019.
+
+---
+
+(2.F) WSRD+
+https://github.com/fvasluianu97/WSRD-DNSR
+Used for: Training relighting model and shadow mapper (Steps 2 & 3), evaluation
+License: CC BY-NC-SA 4.0
+https://creativecommons.org/licenses/by-nc-sa/4.0/legalcode
+Citation: Vasluianu, Seizinger, and Timofte, "WSRD: A Novel Benchmark for High
+Resolution Image Shadow Removal", CVPRW 2023.
+
+---
+
+(2.G) ML-HyperSim
+https://github.com/apple/ml-hypersim
+Used for: Training relighting model and albedo mapper (Steps 2 & 3)
+License: CC BY-SA 3.0
+https://creativecommons.org/licenses/by-sa/3.0/legalcode
+Citation: Roberts, Ramapuram, Ranjan, Kumar, Bautista, Paczan, Webb, and Susskind,
+"Hypersim: A Photorealistic Synthetic Dataset for Holistic Indoor Scene
+Understanding", ICCV 2021.
+
+---
+
+(2.H) CGIntrinsics
+https://www.cs.cornell.edu/projects/cgintrinsics/
+Used for: Training relighting model and albedo mapper (Steps 2 & 3)
+License: CC BY 4.0
+https://creativecommons.org/licenses/by/4.0/legalcode
+Citation: Li and Snavely, "CGIntrinsics: Better Intrinsic Image Decomposition
+through Physically-Based Rendering", ECCV 2018.
+
+
+=============================================================================
+PART 3: DATASETS USED IN EVALUATION ONLY
+=============================================================================
+
+(3.A) IIW (Intrinsic Images in the Wild)
+http://opensurfaces.cs.cornell.edu/publications/intrinsic/
+Used for: Albedo estimation evaluation (WHDR metric)
+License: CC BY 4.0 (annotations only; photos retain their own licenses)
+https://creativecommons.org/licenses/by/4.0/legalcode
+Citation: Bell, Bala, and Snavely, "Intrinsic Images in the Wild", SIGGRAPH 2014.
+
+---
+
+(3.B) INS (INdirect Shadow dataset)
+https://blackjoke76.github.io/Projects/OmniSR/
+Used for: Shadow removal evaluation
+License: No public dataset license stated. Code is MIT-licensed.
+Citation: Xu et al., "OmniSR: Shadow Removal under Direct and Indirect Lighting",
+AAAI 2025.
+
+The INS dataset was rendered using assets from the following sources:
+
+  (3.B.i) Objaverse
+  https://objaverse.allenai.org/
+  License: ODC-By v1.0
+  https://opendatacommons.org/licenses/by/1-0/
+
+  (3.B.ii) 3D-FRONT
+  https://tianchi.aliyun.com/dataset/65347
+  Copyright Alibaba Group
+  License: CC BY-NC-SA 4.0
+  https://creativecommons.org/licenses/by-nc-sa/4.0/legalcode

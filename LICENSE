@@ -1,0 +1,40 @@
+CroCoDiLight
+Copyright (c) 2025-present Alistair Foggin
+
+This project, including its source code, documentation, and pretrained model
+weights, is licensed under the Creative Commons Attribution-NonCommercial-
+ShareAlike 4.0 International license (CC BY-NC-SA 4.0).
+
+A summary of the CC BY-NC-SA 4.0 license is located here:
+	https://creativecommons.org/licenses/by-nc-sa/4.0/
+
+The CC BY-NC-SA 4.0 license is located here:
+	https://creativecommons.org/licenses/by-nc-sa/4.0/legalcode
+
+
+PRETRAINED MODEL WEIGHTS
+========================
+
+The pretrained model weights released as part of this project are derived from
+CroCo pretrained checkpoints (Copyright 2022-present Naver Corporation,
+CC BY-NC-SA 4.0) and were further trained using the datasets documented in the
+NOTICE file. Use of the pretrained weights is additionally subject to the
+license terms of those upstream components and training datasets.
+
+
+ATTRIBUTION
+===========
+
+If you use this project in your research, please cite:
+
+@inproceedings{foggin2026crocodilight,
+  title={{CroCoDiLight}: Repurposing Cross-View Completion Encoders for Relighting},
+  author={Foggin, Alistair J and Smith, William A P},
+  booktitle={The Fourteenth International Conference on Learning Representations},
+  year={2026},
+  url={https://openreview.net/forum?id=GKvb3HCyNk}
+}
+
+This project depends on and builds upon CroCo (Copyright 2022-present Naver
+Corporation), licensed under CC BY-NC-SA 4.0. See NOTICE for full attribution
+of all upstream components.
