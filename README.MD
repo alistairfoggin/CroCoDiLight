@@ -1,7 +1,8 @@
 # CroCoDiLight
 
 Disentangles illumination from scene content in CroCo (Cross-view Completion) latent representations. A learned lighting
-extractor separates each encoder embedding into a single lighting vector and lighting-invariant patch features, which can
+extractor separates each encoder embedding into a single lighting vector and lighting-invariant patch features, which
+can
 then be recombined with any target lighting. This enables shadow removal, albedo estimation, lighting transfer, and
 interpolation, trained on datasets two orders of magnitude smaller than the original CroCo pretraining.
 
@@ -10,10 +11,13 @@ interpolation, trained on datasets two orders of magnitude smaller than the orig
 Create a conda environment:
 
 ```bash
-conda create -n croco python=3.10 -y
-conda activate croco
+conda create -n crocodilight python=3.10 -y
+conda activate crocodilight
 conda install pytorch torchvision -c pytorch
 ```
+
+> NOTE: croco (and optionally curope) are installed as standalone packages in this conda environment from the
+`croco_module` branch of the CroCo repository.
 
 Install with curope CUDA kernels for faster RoPE positional embeddings. You can install `cuda-toolkit`
 instead of `cuda-cudart-dev` and `cuda-nvcc` if you prefer a complete CUDA installation. A system CUDA
@@ -33,6 +37,7 @@ pip install -e .
 ```
 
 To run the gradio demos, you also need to run the following:
+
 ```bash
 pip install -e ".[demos]"
 ```

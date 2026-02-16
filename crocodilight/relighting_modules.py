@@ -5,6 +5,8 @@ from torch import nn
 
 from croco.models.blocks import Block
 
+from crocodilight.dataloader import img_mean, img_std
+
 
 class DelightingTransformer(nn.Module):
     def __init__(self, patch_size=1024, num_heads=16, mlp_ratio=2, extractor_depth=2,
@@ -63,10 +65,6 @@ class RelightingTransformer(nn.Module):
             x = blk(x, xpos_extra)
         dynamic = x[:, -1:, :]
         return dynamic
-
-
-img_mean = [0.485, 0.456, 0.406]
-img_std = [0.229, 0.224, 0.225]
 
 
 def rescale_image(img):
