@@ -70,6 +70,18 @@ the base model only.
 All inference scripts accept `--help` for full usage and `--device` for GPU selection. Input can be a single image or a
 folder.
 
+### Gradio demos
+
+Interactive demos for shadow removal, albedo estimation, and relighting are available
+as a tabbed Gradio app:
+
+```bash
+python demos/app.py
+```
+
+Individual demos can also be run standalone (e.g. `python demos/shadow_removal.py`). Pass
+`--share` to create a public link.
+
 ### Shadow removal
 
 ```bash
@@ -182,7 +194,7 @@ If you use CroCoDiLight in your research, please cite:
 
 ## License
 
-This project, including its source code, documentation, and pretrained model weights, is
+This project, including its source code and pretrained model weights, is
 licensed under [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/). The
 pretrained weights are additionally subject to the license terms of the upstream training
 data documented in the [NOTICE](NOTICE) file.
@@ -195,3 +207,11 @@ licensed under CC BY-NC-SA 4.0 by Naver Corporation.
 Model training was performed on the Viking cluster, a high performance compute facility
 provided by the University of York. We are grateful for computational support from the
 University of York, IT Services and the Research IT team.
+
+## AI Usage
+
+[Claude Code](https://claude.ai/download) (Anthropic) was used as a development tool to
+package the project as an installable Python module (pyproject.toml), refactor inference
+scripts (removing hard-coded paths and extracting shared model loading and utility
+functions), and build the Gradio demos. All core research code, model architectures, and
+training procedures were designed and written by the authors.

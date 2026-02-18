@@ -17,22 +17,11 @@ Copyright 2022-present Naver Corporation
 Licensed under CC BY-NC-SA 4.0
 https://creativecommons.org/licenses/by-nc-sa/4.0/legalcode
 
-CroCo itself contains subcomponents with separate licenses:
+Portions of this project's source code are adapted from the CroCo codebase.
+This project's pretrained model weights incorporate CroCo v2 encoder weights.
+The CroCo v2 pretrained checkpoints were trained on additional datasets whose
+license terms are documented in the CroCo repository (NOTICE_CHECKPOINTS).
 
-  (1.A.i) facebookresearch/mae
-  https://github.com/facebookresearch/mae
-  Attribution-NonCommercial 4.0 International (CC BY-NC 4.0)
-  https://creativecommons.org/licenses/by-nc/4.0/legalcode
-
-  (1.A.ii) rwightman/pytorch-image-models
-  https://github.com/rwightman/pytorch-image-models
-  Apache License Version 2.0
-  https://www.apache.org/licenses/LICENSE-2.0
-
-CroCo pretrained checkpoints were trained using additional datasets documented in
-the CroCo repository (NOTICE_CHECKPOINTS), including Habitat-Sim HM3D, ScanNet,
-Replica, ReplicaCAD, ARKitScenes, MegaDepth, and 3D_Street_View, each under their
-own license terms.
 
 
 =============================================================================
@@ -41,7 +30,9 @@ PART 2: DATASETS USED IN TRAINING
 
 The datasets listed below are not distributed with this project. They are referenced
 here for attribution and to inform users of the license terms that may apply to
-pretrained model checkpoints derived from these datasets.
+pretrained model checkpoints derived from these datasets. Where no public dataset
+license is stated, the dataset was used for academic research in accordance with
+standard practice; users should verify the terms of use with the original authors.
 
 ---
 
@@ -73,7 +64,7 @@ the World", CVPR 2018.
 
 ---
 
-(2.D) SRD (Shadow Removal Dataset)
+(2.D) SRD
 Used for: Training relighting model and shadow mapper (Steps 2 & 3), evaluation
 License: No public license stated.
 Citation: Qu, Tian, He, Tang, and Lau, "DeshadowNet: A Multi-Context Embedding
@@ -131,16 +122,18 @@ PART 3: DATASETS USED IN EVALUATION ONLY
 
 (3.A) IIW (Intrinsic Images in the Wild)
 http://opensurfaces.cs.cornell.edu/publications/intrinsic/
+Copyright 2014 Sean Bell, Kavita Bala, Noah Snavely
 Used for: Albedo estimation evaluation (WHDR metric)
-License: CC BY 4.0 (annotations only; photos retain their own licenses)
+License: CC BY 4.0 (annotations only; photos retain their own licenses). Code is MIT-licensed.
 https://creativecommons.org/licenses/by/4.0/legalcode
+https://opensource.org/licenses/MIT
 Citation: Bell, Bala, and Snavely, "Intrinsic Images in the Wild", SIGGRAPH 2014.
 
 ---
 
 (3.B) INS (INdirect Shadow dataset)
 https://blackjoke76.github.io/Projects/OmniSR/
-Used for: Shadow removal evaluation
+Used for: Shadow removal evaluation and an ablation study
 License: No public dataset license stated. Code is MIT-licensed.
 Citation: Xu et al., "OmniSR: Shadow Removal under Direct and Indirect Lighting",
 AAAI 2025.
