@@ -1,4 +1,4 @@
-"""Shared inference utilities for crocodilight scripts.
+"""Shared inference utilities for CroCoDiLight scripts.
 
 Centralizes model loading, image transforms, tensor I/O, and feature extraction
 patterns that were previously copy-pasted across 5+ scripts.
@@ -31,7 +31,7 @@ def get_device(device_str=None):
     return torch.device('cuda:0' if torch.cuda.is_available() and torch.cuda.device_count() > 0 else 'cpu')
 
 
-def load_model(model_path="pretrained_models/crocodilight.pth", device=None):
+def load_model(model_path="pretrained_models/CroCoDiLight.pth", device=None):
     """Load RelightModule onto device, set to inference mode.
 
     Args:

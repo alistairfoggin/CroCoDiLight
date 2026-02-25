@@ -47,15 +47,16 @@ pip install -e ".[demos]"
 
 ## Pretrained Models
 
-All weights should be placed in `pretrained_models/`.
+Download pretrained weights from the [HuggingFace repository](https://huggingface.co/alistairfoggin/CroCoDiLight)
+and place them in `pretrained_models/`.
 
 ### For inference
 
-| File                             | Required for          | Description                                                                                                           |
-|----------------------------------|-----------------------|-----------------------------------------------------------------------------------------------------------------------|
-| `CroCoDiLight.pth`               | All inference scripts | Full CroCoDiLight model (includes the CroCo encoder, single-view decoder, lighting extractor, and lighting entangler) |
-| `CroCoDiLight_shadow_mapper.pth` | Shadow removal        | Lighting mapper trained for shadow removal                                                                            |
-| `CroCoDiLight_albedo_mapper.pth` | Albedo estimation     | Lighting mapper trained for intrinsic image decomposition                                                             |
+| File | Required for | Description |
+|------|-------------|-------------|
+| [`CroCoDiLight.pth`](https://huggingface.co/alistairfoggin/CroCoDiLight/resolve/main/CroCoDiLight.pth) | All inference scripts | Full CroCoDiLight model (includes the CroCo encoder, single-view decoder, lighting extractor, and lighting entangler) |
+| [`CroCoDiLight_shadow_mapper.pth`](https://huggingface.co/alistairfoggin/CroCoDiLight/resolve/main/CroCoDiLight_shadow_mapper.pth) | Shadow removal | Lighting mapper trained for shadow removal |
+| [`CroCoDiLight_albedo_mapper.pth`](https://huggingface.co/alistairfoggin/CroCoDiLight/resolve/main/CroCoDiLight_albedo_mapper.pth) | Albedo estimation | Lighting mapper trained for intrinsic image decomposition |
 
 `CroCoDiLight.pth` is the base model needed by every inference and evaluation script. The mapper weights are only needed
 for their respective tasks (shadow removal or albedo estimation). Lighting swap, freeze, transfer, and interpolation use
@@ -63,10 +64,10 @@ the base model only.
 
 ### For training
 
-| File                                | Used in     | Description                                                                                                                                                                                                                                                                           |
-|-------------------------------------|-------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `CroCo_V2_ViTLarge_BaseDecoder.pth` | Steps 1 & 2 | Original CroCo v2 ViT-Large weights from [Weinzaepfel et al.](https://github.com/naver/croco) (includes the cross-view decoder, though only the encoder is used). Download from [here](https://download.europe.naverlabs.com/ComputerVision/CroCo/CroCo_V2_ViTLarge_BaseDecoder.pth). |
-| `CroCoDiLight_decoder.pth`          | Step 2      | Single-view decoder pretrained on ImageNet reconstruction (output of training step 1). Available for download but not needed for inference -- its weights are embedded in `CroCoDiLight.pth`.                                                                                         |
+| File | Used in | Description |
+|------|---------|-------------|
+| [`CroCo_V2_ViTLarge_BaseDecoder.pth`](https://download.europe.naverlabs.com/ComputerVision/CroCo/CroCo_V2_ViTLarge_BaseDecoder.pth) | Steps 1 & 2 | Original CroCo v2 ViT-Large weights from [Weinzaepfel et al.](https://github.com/naver/croco) (includes the cross-view decoder, though only the encoder is used). |
+| [`CroCoDiLight_decoder.pth`](https://huggingface.co/alistairfoggin/CroCoDiLight/resolve/main/CroCoDiLight_decoder.pth) | Step 2 | Single-view decoder pretrained on ImageNet reconstruction (output of training step 1). Available for download but not needed for inference as its weights are embedded in `CroCoDiLight.pth`. |
 
 ## Inference
 
@@ -213,7 +214,7 @@ University of York, IT Services and the Research IT team.
 
 ## AI Usage
 
-[Claude Code](https://claude.ai/download) (Anthropic) was used as a development tool to
+[Claude Code](https://claude.com/product/claude-code) (Anthropic) was used as a development tool to
 package the project as an installable Python module (pyproject.toml), refactor inference
 scripts (removing hard-coded paths and extracting shared model loading and utility
 functions), and build the Gradio demos. All core research code, model architectures, and

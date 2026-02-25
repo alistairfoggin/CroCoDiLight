@@ -30,7 +30,6 @@ if __name__ == "__main__":
     print("Starting Pretraining")
 
     run = wandb.init(
-        entity="your-wandb-entity",  # replace with your wandb entity
         project="crocodilight-pretrain",
         config={"epochs": epochs, "learning_rate": lr, "batch_size": batch_size},
         notes="224 resolution with LPIPS AlexNet",

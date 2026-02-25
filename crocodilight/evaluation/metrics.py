@@ -1,4 +1,4 @@
-"""Shared image quality metrics for crocodilight evaluation scripts.
+"""Shared image quality metrics for CroCoDiLight evaluation scripts.
 
 Extracted from scripts/shadow_eval.py into a reusable module.
 """

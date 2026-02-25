@@ -140,11 +140,11 @@ class RelightModule(nn.Module):
         Args:
             encoder: If True, freeze the CroCo encoder (default: True)
             decoder: If True, freeze the CroCo decoder (default: True)
-            extractor: If True, freeze the crocodilight extractor/disentangler (default: False)
-            entangler: If True, freeze the crocodilight entangler (default: False)
+            extractor: If True, freeze the CroCoDiLight extractor/disentangler (default: False)
+            entangler: If True, freeze the CroCoDiLight entangler (default: False)
 
         Common configurations:
-            - Relighting training: freeze_components(True, False, False, True)
+            - Relighting training: freeze_components(True, True, False, False)
             - Inference only: freeze_components(True, True, True, True)
         """
         self.croco.freeze_encoder(encoder)

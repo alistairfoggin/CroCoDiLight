@@ -17,7 +17,6 @@ if __name__ == "__main__":
     batch_size = 8
 
     run = wandb.init(
-        entity="your-wandb-entity",  # replace with your wandb entity
         project="crocodilight-train",
         config={"epochs": epochs, "learning_rate": lr, "batch_size": batch_size},
         notes="bigtime+mit_illumination+srd+wsrd+istd+hypersim+cgi 448x448 LPIPS+MSE",

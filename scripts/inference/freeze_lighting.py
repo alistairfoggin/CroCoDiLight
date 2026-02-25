@@ -32,7 +32,7 @@ def main():
     model = load_model(args.model, device)
     img_info = {"height": 448, "width": 448}
 
-    # Extract crocodilight features from reference
+    # Extract CroCoDiLight features from reference
     _, dyn_ref, _, _ = extract_features(model, args.reference, device, resize=args.resize)
 
     def process(img_path, out_path):

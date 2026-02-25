@@ -25,7 +25,7 @@ from crocodilight.relighting_modules import img_mean, img_std
 def main():
     parser = argparse.ArgumentParser(description="Run albedo inference on IIW and compute WHDR")
     parser.add_argument("--iiw-root", default="./datasets/IIW/", help="Path to IIW data directory")
-    parser.add_argument("--model", default="pretrained_models/crocodilight.pth", help="Model checkpoint path")
+    parser.add_argument("--model", default="pretrained_models/CroCoDiLight.pth", help="Model checkpoint path")
     parser.add_argument("--mapper", default="pretrained_models/CroCoDiLight_albedo_mapper.pth", help="Albedo mapper weights path")
     parser.add_argument("--output-json", default="whdr_results_albedo_mapper_all.json", help="Output JSON for results")
     parser.add_argument("--device", default=None, help="Device (e.g. cuda:0, cpu). Auto-detects if not set.")

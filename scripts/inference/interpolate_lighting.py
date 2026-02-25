@@ -19,7 +19,7 @@ from crocodilight.inference import (
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Interpolate crocodilight between two images")
+    parser = argparse.ArgumentParser(description="Interpolate CroCoDiLight between two images")
     parser.add_argument("--frame-a", required=True, help="First frame")
     parser.add_argument("--frame-b", required=True, help="Second frame")
     parser.add_argument("--output-dir", required=True, help="Output directory for interpolated frames")

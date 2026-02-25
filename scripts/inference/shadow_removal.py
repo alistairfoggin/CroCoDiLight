@@ -17,7 +17,7 @@ from crocodilight.inference import (
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Remove shadows from images using crocodilight")
+    parser = argparse.ArgumentParser(description="Remove shadows from images using CroCoDiLight")
     parser.add_argument("--input", required=True, help="Input image or folder")
     parser.add_argument("--output", required=True, help="Output image or folder")
     parser.add_argument("--model", default="pretrained_models/CroCoDiLight.pth", help="Model checkpoint path")

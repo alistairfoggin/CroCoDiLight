@@ -74,7 +74,6 @@ def train_mapper(mapper_type: str):
     mapper_optim = torch.optim.Adam(mapper_model.latent_mapper.parameters(), lr=lr)
 
     run = wandb.init(
-        entity="your-wandb-entity",  # replace with your wandb entity
         project=f"crocodilight-{mapper_type}-mapper-train",
         config={"epochs": epochs, "learning_rate": lr, "batch_size": batch_size},
         notes="Train albedo estimation" if mapper_type == "albedo" else "Train shadow removal with INS",
