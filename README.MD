@@ -1,10 +1,13 @@
-# CroCoDiLight
+# [ICLR 2026] CroCoDiLight: Repurposing Cross-View Completion Encoders for Relighting
+
+[![Project Page](https://img.shields.io/badge/Project-Page-blue)](https://alistairfoggin.com/projects/crocodilight)
+[![Paper](https://img.shields.io/badge/OpenReview-Paper-red)](https://openreview.net/forum?id=GKvb3HCyNk)
+[![Model](https://img.shields.io/badge/%F0%9F%A4%97-Model-yellow)](https://huggingface.co/alistairfoggin/CroCoDiLight)
 
 Disentangles illumination from scene content in CroCo (Cross-view Completion) latent representations. A learned lighting
 extractor separates each encoder embedding into a single lighting vector and lighting-invariant patch features, which
-can
-then be recombined with any target lighting. This enables shadow removal, albedo estimation, lighting transfer, and
-interpolation, trained on datasets two orders of magnitude smaller than the original CroCo pretraining.
+can then be recombined with target lighting conditions. This enables shadow removal, albedo estimation, lighting
+transfer, and interpolation, trained on datasets two orders of magnitude smaller than the original CroCo pretraining.
 
 ## Setup
 
@@ -178,7 +181,7 @@ python scripts/inference/albedo_estimation.py --input ./datasets/IIW/ --output .
 python scripts/evaluation/albedo_whdr.py --iiw-root ./datasets/IIW/
 ```
 
-## Citation
+## Citation BibTeX
 
 If you use CroCoDiLight in your research, please cite:
 
