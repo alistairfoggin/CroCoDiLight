@@ -1,8 +1,7 @@
 """CroCoDiLight unified Gradio demo with tabbed interface.
 
 Composes Shadow Removal, Albedo Estimation, and Lighting Freeze into a single
-application. This file serves as the HF Space entry point (app_file) and can
-also be run locally.
+application.
 
 Usage:
     python demos/app.py [--model-path pretrained_models/] [--share] [--port 7860]
@@ -14,8 +13,7 @@ import sys
 
 import gradio as gr
 
-# Ensure demo modules are importable when run from the repo root or as a flat
-# Space directory.
+# Ensure demo modules are importable when run from the repo root.
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from shadow_removal import get_weight_path, build_shadow_ui

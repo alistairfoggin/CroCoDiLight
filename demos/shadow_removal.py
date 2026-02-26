@@ -20,16 +20,6 @@ from crocodilight.inference import (
     tensor_to_pil, unpad, pad_to_min_size,
 )
 
-# Conditional HF Spaces GPU decorator
-try:
-    import spaces
-
-    gpu_decorator = spaces.GPU
-except (ImportError, ModuleNotFoundError):
-
-    def gpu_decorator(fn):
-        return fn
-
 
 HF_REPO_ID = "alistairfoggin/CroCoDiLight"
 
@@ -63,7 +53,6 @@ def load_shadow_models(model_path="pretrained_models", device=None):
 def build_shadow_ui(model, mapper, device):
     """Build the Shadow Removal tab UI. Returns a gr.Blocks component."""
 
-    @gpu_decorator
     def run_shadow_inference(image, resize):
         if image is None:
             raise gr.Error("Please upload an image.")

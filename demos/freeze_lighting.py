@@ -1,7 +1,7 @@
 """Lighting Freeze Gradio demo.
 
 Applies the lighting from a reference image to content image(s).
-Supports single-image mode (HF Space + local) and batch mode (local only).
+Supports single-image and batch modes.
 
 Standalone usage:
     python demos/freeze_lighting.py [--model-path pretrained_models/] [--share] [--port 7860]
@@ -25,19 +25,6 @@ from crocodilight.inference import (
     extract_features_pil,
     tensor_to_pil,
 )
-
-# Conditional HF Spaces GPU decorator
-try:
-    import spaces
-
-    gpu_decorator = spaces.GPU
-    IS_HF_SPACE = True
-except (ImportError, ModuleNotFoundError):
-
-    def gpu_decorator(fn):
-        return fn
-
-    IS_HF_SPACE = False
 
 
 HF_REPO_ID = "alistairfoggin/CroCoDiLight"
@@ -88,7 +75,6 @@ def _relight_images(model, device, ref_image: Image.Image, content_images: list[
 def build_freeze_ui(model, device):
     """Build the Lighting Freeze tab UI. Returns a gr.Blocks component."""
 
-    @gpu_decorator
     def run_freeze_single(ref_image, content_image, resize):
         if ref_image is None:
             raise gr.Error("Please upload a lighting reference image.")
@@ -139,12 +125,11 @@ def build_freeze_ui(model, device):
             "The reference provides lighting; the content image keeps its structure."
         )
 
-        if not IS_HF_SPACE:
-            mode = gr.Radio(
-                choices=["Single Image", "Batch"],
-                value="Single Image",
-                label="Mode",
-            )
+        mode = gr.Radio(
+            choices=["Single Image", "Batch"],
+            value="Single Image",
+            label="Mode",
+        )
 
         resize_input = gr.Number(value=None, label="Resize (leave empty for original size)", precision=0)
 
@@ -161,36 +146,35 @@ def build_freeze_ui(model, device):
                 outputs=single_output,
             )
 
-        # --- Batch mode (local only) ---
-        if not IS_HF_SPACE:
-            with gr.Group(visible=False) as batch_group:
-                with gr.Row():
-                    ref_image_batch = gr.Image(type="pil", label="Lighting Reference")
-                    content_images_batch = gr.File(
-                        file_count="multiple",
-                        file_types=["image"],
-                        label="Content Images",
-                    )
-                batch_gallery = gr.Gallery(label="Results")
-                batch_download = gr.File(label="Download All (ZIP)", interactive=False)
-                batch_btn = gr.Button("Apply Lighting (Batch)", variant="primary")
-                batch_btn.click(
-                    fn=run_freeze_batch,
-                    inputs=[ref_image_batch, content_images_batch, resize_input],
-                    outputs=[batch_gallery, batch_download],
+        # --- Batch mode ---
+        with gr.Group(visible=False) as batch_group:
+            with gr.Row():
+                ref_image_batch = gr.Image(type="pil", label="Lighting Reference")
+                content_images_batch = gr.File(
+                    file_count="multiple",
+                    file_types=["image"],
+                    label="Content Images",
                 )
-
-            def toggle_mode(mode_val):
-                return (
-                    gr.update(visible=mode_val == "Single Image"),
-                    gr.update(visible=mode_val == "Batch"),
-                )
-
-            mode.change(
-                fn=toggle_mode,
-                inputs=mode,
-                outputs=[single_group, batch_group],
+            batch_gallery = gr.Gallery(label="Results")
+            batch_download = gr.File(label="Download All (ZIP)", interactive=False)
+            batch_btn = gr.Button("Apply Lighting (Batch)", variant="primary")
+            batch_btn.click(
+                fn=run_freeze_batch,
+                inputs=[ref_image_batch, content_images_batch, resize_input],
+                outputs=[batch_gallery, batch_download],
             )
+
+        def toggle_mode(mode_val):
+            return (
+                gr.update(visible=mode_val == "Single Image"),
+                gr.update(visible=mode_val == "Batch"),
+            )
+
+        mode.change(
+            fn=toggle_mode,
+            inputs=mode,
+            outputs=[single_group, batch_group],
+        )
 
     return freeze_ui
 
