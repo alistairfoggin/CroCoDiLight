@@ -82,7 +82,7 @@ def build_freeze_ui(model, device):
             raise gr.Error("Please upload a content image.")
         resize = int(resize) if resize is not None and resize > 0 else None
         try:
-            return _relight_images(model, device, ref_image, content_image, resize=resize)
+            return _relight_images(model, device, ref_image, [content_image], resize=resize)[0]
         except torch.cuda.OutOfMemoryError:
             torch.cuda.empty_cache()
             raise gr.Error("GPU ran out of memory. Please try smaller images.")
@@ -138,7 +138,7 @@ def build_freeze_ui(model, device):
             with gr.Row():
                 ref_image = gr.Image(type="pil", label="Lighting Reference")
                 content_image = gr.Image(type="pil", label="Content Image")
-            single_output = gr.Image(type="pil", label="Result", interactive=False)
+            single_output = gr.Image(type="pil", label="Result", format="png", interactive=False)
             single_btn = gr.Button("Apply Lighting", variant="primary")
             single_btn.click(
                 fn=run_freeze_single,

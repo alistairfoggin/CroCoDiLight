@@ -72,7 +72,7 @@ def build_shadow_ui(model, mapper, device):
         gr.Markdown("## Shadow Removal\nUpload an image to remove shadows.")
         with gr.Row():
             input_image = gr.Image(type="pil", label="Input Image")
-            output_image = gr.Image(type="pil", label="Result", interactive=False)
+            output_image = gr.Image(type="pil", label="Result", format="png", interactive=False)
         resize_input = gr.Number(value=None, label="Resize (leave empty for original size)", precision=0)
         run_btn = gr.Button("Remove Shadows", variant="primary")
         run_btn.click(fn=run_shadow_inference, inputs=[input_image, resize_input], outputs=output_image)
