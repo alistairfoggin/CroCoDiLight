@@ -1,6 +1,6 @@
 # [ICLR 2026] CroCoDiLight: Repurposing Cross-View Completion Encoders for Relighting
 
-[![Project Page](https://img.shields.io/badge/Project-Page-blue)](https://alistairfoggin.com/projects/crocodilight)
+[![Project Page](https://img.shields.io/badge/Project-Page-blue)](https://alistairfoggin.com/projects/crocodilight/)
 [![Paper](https://img.shields.io/badge/%F0%9F%93%84-Paper-red)](https://openreview.net/pdf?id=GKvb3HCyNk)
 [![Model](https://img.shields.io/badge/%F0%9F%A4%97-Model-yellow)](https://huggingface.co/alistairfoggin/CroCoDiLight)
 
