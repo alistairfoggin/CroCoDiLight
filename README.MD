@@ -16,7 +16,7 @@ Create a conda environment:
 ```bash
 conda create -n crocodilight python=3.10 -y
 conda activate crocodilight
-conda install pytorch torchvision -c pytorch
+pip install torch torchvision
 ```
 
 > NOTE: croco (and optionally curope) are installed as standalone packages in this conda environment from the
