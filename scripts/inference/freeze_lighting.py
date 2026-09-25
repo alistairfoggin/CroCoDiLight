@@ -10,11 +10,9 @@ Usage:
 
 import argparse
 
-import torch
-
 from crocodilight.inference import (
-    get_device, load_model, extract_features,
-    save_tensor_image, process_input,
+    get_device, load_model, load_image,
+    extract_lighting, relight, save_tensor_image, process_input,
 )
 
 
@@ -30,17 +28,14 @@ def main():
 
     device = get_device(args.device)
     model = load_model(args.model, device)
-    img_info = {"height": 448, "width": 448}
-
-    # Extract CroCoDiLight features from reference
-    _, dyn_ref, _, _ = extract_features(model, args.reference, device, resize=args.resize)
+    reference = load_image(
+        args.reference, device, resize=args.resize
+    )
+    lighting = extract_lighting(model, reference)
 
     def process(img_path, out_path):
-        static, _, pos, tiling_module = extract_features(model, img_path, device, resize=args.resize)
-        with torch.no_grad():
-            feat = model.lighting_entangler(static, pos, dyn_ref)
-            out_img = model.croco.decode(feat, pos, img_info)
-            out_img = tiling_module.rebuild_with_masks(out_img)
+        image = load_image(img_path, device, resize=args.resize)
+        out_img = relight(model, image, lighting)
         save_tensor_image(out_img, out_path)
 
     process_input(args.input, args.output, process)

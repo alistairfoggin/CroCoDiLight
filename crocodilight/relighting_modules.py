@@ -67,7 +67,7 @@ class RelightingTransformer(nn.Module):
         return dynamic
 
 
-def rescale_image(img):
+def rescale_image(img: torch.Tensor):
     mean = torch.tensor(img_mean, device=img.device, dtype=img.dtype).reshape(1, -1, 1, 1)
     std = torch.tensor(img_std, device=img.device, dtype=img.dtype).reshape(1, -1, 1, 1)
     return torch.clamp(img * std + mean, min=0., max=1.)

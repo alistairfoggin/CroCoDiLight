@@ -1,16 +1,17 @@
 from functools import partial
+from pathlib import Path
 
 import torch
-from torch import nn
 from blended_tiling import TilingModule
-
-from crocodilight.relighting_modules import DelightingTransformer, RelightingTransformer
 from croco.models.blocks import Block
 from croco.models.croco import CroCoNet
 from croco.models.head_downstream import PixelwiseTaskWithDPT
+from torch import nn
+
+from crocodilight.relighting_modules import DelightingTransformer, RelightingTransformer
 
 
-def load_relight_model(checkpoint_path, device='cpu'):
+def load_relight_model(checkpoint_path: Path | str, device='cpu'):
     """Load a RelightModule from a consolidated checkpoint.
 
     Args:

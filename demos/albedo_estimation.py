@@ -14,12 +14,11 @@ import torch
 
 from crocodilight.inference import (
     get_device,
+    apply_mapper,
     load_model,
     load_mapper,
     pil_to_tensor,
     tensor_to_pil,
-    pad_to_min_size,
-    unpad,
 )
 
 
@@ -60,10 +59,7 @@ def build_albedo_ui(model, mapper, device):
         resize = int(resize) if resize is not None and resize > 0 else None
         try:
             img_tensor = pil_to_tensor(image, device, resize=resize)
-            img_tensor, pad_info = pad_to_min_size(img_tensor)
-            with torch.no_grad():
-                result = model.apply_mapper(img_tensor, mapper, use_consistency=False)
-            result = unpad(result, pad_info)
+            result = apply_mapper(model, img_tensor, mapper)
             return tensor_to_pil(result)
         except torch.cuda.OutOfMemoryError:
             torch.cuda.empty_cache()

@@ -74,6 +74,33 @@ the base model only.
 All inference scripts accept `--help` for full usage and `--device` for GPU selection. Input can be a single image or a
 folder.
 
+### Python API
+
+The API accepts ImageNet-normalized `float32` tensors in `N, C, H, W` layout.
+Use `load_image` for image paths or `pil_to_tensor` for PIL images:
+
+```python
+from crocodilight import (
+    apply_mapper, extract_lighting, load_mapper, load_model, relight, load_image
+)
+
+model = load_model("pretrained_models/CroCoDiLight.pth", device="cuda:0")
+
+reference_image = load_image("/path/to/reference/image.png", device="cuda:0")
+other_image = load_image("/path/to/other/image.png", device="cuda:0")
+
+lighting = extract_lighting(model, reference_image) # Extracts lighting for a single image
+relit_image = relight(model, other_image, lighting) # Can relight a batch of images
+
+shadow_mapper = load_mapper(
+    model, "pretrained_models/CroCoDiLight_shadow_mapper.pth", device="cuda:0"
+)
+shadow_free = apply_mapper(model, other_image, shadow_mapper) # Can apply it to a batch of images
+```
+
+Use the albedo mapper with `apply_mapper` for albedo estimation. Lighting swaps can
+be composed by extracting each image's lighting and relighting the opposite image.
+
 ### Gradio demos
 
 Interactive demos for shadow removal, albedo estimation, and relighting are available
@@ -214,8 +241,7 @@ University of York, IT Services and the Research IT team.
 
 ## AI Usage
 
-[Claude Code](https://claude.com/product/claude-code) (Anthropic) was used as a development tool to
-package the project as an installable Python module (pyproject.toml), refactor inference
-scripts (removing hard-coded paths and extracting shared model loading and utility
-functions), and build the Gradio demos. All core research code, model architectures, and
-training procedures were designed and written by the authors.
+Agentic coding tools were used to package the project as an installable Python module
+(pyproject.toml), refactor inference scripts (removing hard-coded paths and extracting
+shared model loading and utility functions), and build the Gradio demos. All core research
+code, model architectures, and training procedures were designed and written by the authors.

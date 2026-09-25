@@ -7,7 +7,7 @@ name = "crocodilight"
 version = "1.0.0"
 description = "CroCoDiLight image delighting and relighting"
 readme = "README.MD"
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 license = {text = "CC-BY-NC-SA-4.0"}
 authors = [
     {name = "Alistair Foggin", email = "alistair.foggin@york.ac.uk"}

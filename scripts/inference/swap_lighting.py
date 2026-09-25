@@ -16,8 +16,8 @@ import os
 import torch
 
 from crocodilight.inference import (
-    get_device, load_model, load_mapper, get_transform,
-    load_and_transform, save_tensor_image,
+    get_device, load_model, load_mapper,
+    load_image, save_tensor_image,
 )
 def main():
     parser = argparse.ArgumentParser(description="Swap lighting between images or apply a mapper")
@@ -32,13 +32,14 @@ def main():
 
     device = get_device(args.device)
     model = load_model(args.model, device)
-    transform = get_transform(resize=args.resize, center_crop=args.resize)
     os.makedirs(args.output_dir, exist_ok=True)
 
     if args.mapper:
         # Single-image mapper mode
         mapper = load_mapper(model, args.mapper, device)
-        img = load_and_transform(args.image1, transform, device)
+        img = load_image(
+            args.image1, device, resize=args.resize, center_crop=args.resize
+        )
         with torch.no_grad():
             mapped_img = model.apply_mapper(img, mapper)
         save_tensor_image(mapped_img, os.path.join(args.output_dir, "mapped.png"))
@@ -47,8 +48,12 @@ def main():
         # Two-image swap mode
         if args.image2 is None:
             parser.error("--image2 is required for swap mode (or use --mapper for single-image mode)")
-        img1 = load_and_transform(args.image1, transform, device)
-        img2 = load_and_transform(args.image2, transform, device)
+        img1 = load_image(
+            args.image1, device, resize=args.resize, center_crop=args.resize
+        )
+        img2 = load_image(
+            args.image2, device, resize=args.resize, center_crop=args.resize
+        )
         with torch.no_grad():
             img1_relit, img2_relit, *_ = model(img1, img2, do_tiling=False)
         save_tensor_image(img1_relit, os.path.join(args.output_dir, "image1_relit.png"))

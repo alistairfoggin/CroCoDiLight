@@ -16,8 +16,11 @@ import torch
 
 from crocodilight.evaluation.whdr import compute_whdr, load_image
 from crocodilight.inference import (
-    get_device, load_model, load_mapper, get_transform,
-    load_and_transform, pad_to_min_size, unpad,
+    get_device,
+    apply_mapper,
+    load_image,
+    load_mapper,
+    load_model,
 )
 from crocodilight.relighting_modules import img_mean, img_std
 
@@ -34,8 +37,6 @@ def main():
     device = get_device(args.device)
     model = load_model(args.model, device)
     mapper = load_mapper(model, args.mapper, device)
-    transform = get_transform()
-
     root_dir = args.iiw_root
     filenames = [f for f in os.listdir(root_dir) if f.endswith(".png") and "_ref" not in f]
 
@@ -44,11 +45,8 @@ def main():
     with torch.no_grad():
         for filename in filenames:
             path = os.path.join(root_dir, filename)
-            img = load_and_transform(path, transform, device)
-            img, pad_info = pad_to_min_size(img)
-
-            delit_img = model.apply_mapper(img, mapper, use_consistency=False)
-            delit_img = unpad(delit_img, pad_info)
+            img = load_image(path, device)
+            delit_img = apply_mapper(model, img, mapper)
 
             # Denormalize and save reflectance image
             out_img = delit_img[0].detach().cpu().permute(1, 2, 0).numpy()

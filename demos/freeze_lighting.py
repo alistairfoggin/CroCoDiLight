@@ -20,10 +20,11 @@ import torch
 from PIL import Image
 
 from crocodilight.inference import (
-    get_device,
+    extract_lighting,
     load_model,
-    extract_features_pil,
-    tensor_to_pil,
+    pil_to_tensor,
+    relight,
+    tensor_to_pil, get_device,
 )
 
 
@@ -47,8 +48,6 @@ def get_weight_path(key, local_dir="pretrained_models"):
 
 def load_freeze_model(model_path="pretrained_models", device=None):
     """Load the base model (no mapper needed for lighting freeze)."""
-    if device is None:
-        device = get_device()
     model = load_model(get_weight_path("model", model_path), device)
     return model, device
 
@@ -57,18 +56,13 @@ def _relight_images(model, device, ref_image: Image.Image, content_images: list[
     """Apply lighting from ref_image to content_image(s). Returns PIL Image."""
     out_pil_imgs = []
     total = len(content_images)
-    with torch.no_grad():
-        _, dyn_ref, _, _ = extract_features_pil(model, ref_image, device, resize=resize)
-        for i, content_image in enumerate(content_images):
-            if progress is not None:
-                progress((i, total), desc=f"Relighting image {i + 1}/{total}")
-            static, _, pos, tiling_module = extract_features_pil(model, content_image, device, resize=resize)
-            feat = model.lighting_entangler(static, pos, dyn_ref)
-            img_info = {"height": 448, "width": 448}
-            out_img = model.croco.decode(feat, pos, img_info)
-            out_img = tiling_module.rebuild_with_masks(out_img)
-            pil_img = tensor_to_pil(out_img)
-            out_pil_imgs.append(pil_img)
+    reference = pil_to_tensor(ref_image, device, resize=resize)
+    lighting = extract_lighting(model, reference)
+    for i, content_image in enumerate(content_images):
+        if progress is not None:
+            progress((i, total), desc=f"Relighting image {i + 1}/{total}")
+        content = pil_to_tensor(content_image, device, resize=resize)
+        out_pil_imgs.append(tensor_to_pil(relight(model, content, lighting)))
     return out_pil_imgs
 
 

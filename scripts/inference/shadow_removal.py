@@ -8,11 +8,9 @@ Usage:
 
 import argparse
 
-import torch
-
 from crocodilight.inference import (
-    get_device, load_model, load_mapper, get_transform,
-    load_and_transform, save_tensor_image, process_input,
+    get_device, load_model, load_mapper,
+    load_image, save_tensor_image, process_input, apply_mapper,
 )
 
 
@@ -29,12 +27,9 @@ def main():
     device = get_device(args.device)
     model = load_model(args.model, device)
     mapper = load_mapper(model, args.mapper, device)
-    transform = get_transform()
-
     def process(img_path, out_path):
-        img = load_and_transform(img_path, transform, device, resize=args.resize)
-        with torch.no_grad():
-            result = model.apply_mapper(img, mapper, use_consistency=False)
+        img = load_image(img_path, device, resize=args.resize)
+        result = apply_mapper(model, img, mapper)
         save_tensor_image(result, out_path)
 
     process_input(args.input, args.output, process)

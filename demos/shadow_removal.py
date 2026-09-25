@@ -13,13 +13,12 @@ import gradio as gr
 import torch
 
 from crocodilight.inference import (
-    get_device,
-    load_model,
+    apply_mapper,
     load_mapper,
+    load_model,
     pil_to_tensor,
-    tensor_to_pil, unpad, pad_to_min_size,
+    tensor_to_pil,
 )
-
 
 HF_REPO_ID = "alistairfoggin/CroCoDiLight"
 
@@ -43,8 +42,6 @@ def get_weight_path(key, local_dir="pretrained_models"):
 
 def load_shadow_models(model_path="pretrained_models", device=None):
     """Load the base model and shadow mapper."""
-    if device is None:
-        device = get_device()
     model = load_model(get_weight_path("model", model_path), device)
     mapper = load_mapper(model, get_weight_path("shadow_mapper", model_path), device)
     return model, mapper, device
@@ -59,10 +56,7 @@ def build_shadow_ui(model, mapper, device):
         resize = int(resize) if resize is not None and resize > 0 else None
         try:
             img_tensor = pil_to_tensor(image, device, resize=resize)
-            img_tensor, pad_info = pad_to_min_size(img_tensor)
-            with torch.no_grad():
-                result = model.apply_mapper(img_tensor, mapper, use_consistency=False)
-            result = unpad(result, pad_info)
+            result = apply_mapper(model, img_tensor, mapper)
             return tensor_to_pil(result)
         except torch.cuda.OutOfMemoryError:
             torch.cuda.empty_cache()

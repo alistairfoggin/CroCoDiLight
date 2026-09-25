@@ -5,16 +5,20 @@ patterns that were previously copy-pasted across 5+ scripts.
 """
 
 import os
+from pathlib import Path
 
-import cv2
 import torch
 import torchvision.transforms.v2 as transforms
 from blended_tiling import TilingModule
 from PIL import Image
 
-from crocodilight.relighting_modules import img_mean, img_std, rescale_image
-from crocodilight.relighting_model import load_relight_model, LightingMapper
-
+from crocodilight.dataloader import img_mean, img_std
+from crocodilight.relighting_model import (
+    LightingMapper,
+    RelightModule,
+    load_relight_model,
+)
+from crocodilight.relighting_modules import rescale_image
 
 def get_device(device_str=None):
     """Auto-detect CUDA or use specified device string.
@@ -30,8 +34,7 @@ def get_device(device_str=None):
         return torch.device(device_str)
     return torch.device('cuda:0' if torch.cuda.is_available() and torch.cuda.device_count() > 0 else 'cpu')
 
-
-def load_model(model_path="pretrained_models/CroCoDiLight.pth", device=None):
+def load_model(model_path: Path | str="pretrained_models/CroCoDiLight.pth", device=None):
     """Load RelightModule onto device, set to inference mode.
 
     Args:
@@ -41,14 +44,13 @@ def load_model(model_path="pretrained_models/CroCoDiLight.pth", device=None):
     Returns:
         RelightModule in inference mode on the specified device.
     """
-    if device is None:
-        device = get_device()
+    device = get_device(device)
     model = load_relight_model(model_path, device)
     model.eval()
     return model
 
 
-def load_mapper(model, mapper_path, device=None):
+def load_mapper(model: RelightModule, mapper_path: Path | str, device=None):
     """Create a LightingMapper compatible with model, load weights, set to inference mode.
 
     Args:
@@ -59,8 +61,7 @@ def load_mapper(model, mapper_path, device=None):
     Returns:
         LightingMapper in inference mode on the specified device.
     """
-    if device is None:
-        device = get_device()
+    device = get_device(device)
     mapper = LightingMapper(
         patch_size=model.croco.enc_embed_dim,
         extractor_depth=8,
@@ -71,17 +72,50 @@ def load_mapper(model, mapper_path, device=None):
     return mapper
 
 
-def get_transform(resize=None, center_crop=None):
-    """Standard ImageNet-normalized transform with optional resize/crop.
+def load_image(image_path: Path | str, device=None, resize=None, center_crop=None):
+    """Load an image path as a normalized ``1,C,H,W`` tensor.
 
     Args:
-        resize: Optional int for Resize transform.
-        center_crop: Optional int for CenterCrop transform.
+        image_path: Path to image file.
+        device: torch.device to move tensor to.
+        resize: Optional resize dimension.
+        center_crop: Optional center-crop dimension.
 
     Returns:
-        torchvision.transforms.Compose
+        torch.Tensor of shape (1, C, H, W).
     """
-    ops = [transforms.ToImage()]
+    with Image.open(image_path) as image:
+        return pil_to_tensor(
+            image, device=device, resize=resize, center_crop=center_crop
+        )
+
+
+def save_tensor_image(tensor: torch.Tensor, path: Path | str):
+    """Denormalize tensor (rescale_image) and save as image file.
+
+    Args:
+        tensor: Image tensor of shape (1, C, H, W) or (C, H, W).
+        path: Output file path.
+    """
+    tensor_to_pil(tensor).save(path)
+
+
+def pil_to_tensor(image: Image.Image, device=None, resize=None, center_crop=None):
+    """Convert a PIL Image to a normalised (1, C, H, W) tensor.
+
+    Applies ImageNet normalisation matching the existing transform pipeline.
+
+    Args:
+        image: PIL Image (RGB).
+        device: torch.device to place tensor on, or None for CPU.
+        resize: Optional resize dimension.
+        center_crop: Optional center-crop dimension.
+
+    Returns:
+        torch.Tensor of shape (1, C, H, W), ImageNet-normalised.
+    """
+    image = image.convert('RGB')
+    ops: list[transforms.Transform] = [transforms.ToImage()]
     if resize is not None:
         ops.append(transforms.Resize(resize))
     if center_crop is not None:
@@ -90,66 +124,13 @@ def get_transform(resize=None, center_crop=None):
         transforms.ToDtype(torch.float32, scale=True),
         transforms.Normalize(mean=img_mean, std=img_std),
     ])
-    return transforms.Compose(ops)
-
-
-def load_and_transform(image_path, transform, device, resize=None):
-    """Load image, apply transform, add batch dim, move to device.
-
-    Args:
-        image_path: Path to image file.
-        transform: torchvision transform to apply.
-        device: torch.device to move tensor to.
-        resize: Optional int to resize the image (applied after transform).
-
-    Returns:
-        torch.Tensor of shape (1, C, H, W).
-    """
-    img = Image.open(image_path).convert('RGB')
-    tensor = transform(img).unsqueeze(0).to(device)
-    if resize is not None:
-        tensor = transforms.Resize(resize)(tensor)
-    return tensor
-
-
-def save_tensor_image(tensor, path):
-    """Denormalize tensor (rescale_image) and save as image file.
-
-    Args:
-        tensor: Image tensor of shape (1, C, H, W) or (C, H, W).
-        path: Output file path.
-    """
-    if tensor.dim() == 3:
-        tensor = tensor.unsqueeze(0)
-    img_np = (rescale_image(tensor)[0].cpu().detach().numpy().transpose(1, 2, 0) * 255).astype('uint8')
-    img_np = cv2.cvtColor(img_np, cv2.COLOR_RGB2BGR)
-    cv2.imwrite(str(path), img_np)
-
-
-def pil_to_tensor(image, device=None, resize=None):
-    """Convert a PIL Image to a normalised (1, C, H, W) tensor.
-
-    Applies ImageNet normalisation matching the existing transform pipeline.
-
-    Args:
-        image: PIL Image (RGB).
-        device: torch.device to place tensor on, or None for CPU.
-        resize: Optional int to resize the image (applied after transform).
-
-    Returns:
-        torch.Tensor of shape (1, C, H, W), ImageNet-normalised.
-    """
-    image = image.convert('RGB')
-    transform = get_transform()
-    tensor = transform(image).unsqueeze(0)
-    if resize is not None:
-        tensor = transforms.Resize(resize)(tensor)
+    tensor = transforms.Compose(ops)(image).unsqueeze(0)
     if device is not None:
         tensor = tensor.to(device)
     return tensor
 
 
-def tensor_to_pil(tensor):
+def tensor_to_pil(tensor: torch.Tensor):
     """Convert a model output tensor back to a PIL Image.
 
     Denormalises using rescale_image() and converts to uint8 PIL.
@@ -167,7 +148,7 @@ def tensor_to_pil(tensor):
     return Image.fromarray(img_np)
 
 
-def pad_to_min_size(img_tensor, min_size=448):
+def _pad_to_min_size(img_tensor: torch.Tensor, min_size=448):
     """Pad image with zeros if smaller than min_size.
 
     Args:
@@ -188,12 +169,12 @@ def pad_to_min_size(img_tensor, min_size=448):
     return padded, {'original_h': H, 'original_w': W}
 
 
-def unpad(tensor, pad_info):
+def _unpad(tensor: torch.Tensor, pad_info):
     """Crop padded tensor back to original size.
 
     Args:
         tensor: Padded tensor of shape (1, C, H, W).
-        pad_info: Dict from pad_to_min_size, or None (returns tensor unchanged).
+        pad_info: Dict from _pad_to_min_size, or None (returns tensor unchanged).
 
     Returns:
         Cropped tensor matching original dimensions.
@@ -203,13 +184,12 @@ def unpad(tensor, pad_info):
     return tensor[:, :, :pad_info['original_h'], :pad_info['original_w']]
 
 
-def _extract_features_from_tensor(model, img, device, tile_size=448, tile_overlap=0.2):
+def _extract_features_from_tensor(model: RelightModule, img: torch.Tensor, tile_size: int=448, tile_overlap: float=0.2):
     """Core feature extraction from a pre-processed (1, C, H, W) tensor.
 
     Args:
         model: Loaded RelightModule.
         img: Image tensor of shape (1, C, H, W), already transformed/normalised.
-        device: torch.device.
         tile_size: Tile size for blended tiling.
         tile_overlap: Overlap fraction between tiles.
 
@@ -217,14 +197,14 @@ def _extract_features_from_tensor(model, img, device, tile_size=448, tile_overla
         (static, dyn, pos, tiling_module) feature tensors.
     """
     tiling_module = TilingModule(tile_size=tile_size, tile_overlap=tile_overlap, base_size=img.shape[2:])
-    img = tiling_module.split_into_tiles(img).to(device)
+    img = tiling_module.split_into_tiles(img)
     with torch.no_grad():
         feat, pos, _ = model.croco._encode_image(img, do_mask=False, return_all_blocks=False)
         static, dyn, _ = model.lighting_extractor(feat, pos)
     return static, dyn, pos, tiling_module
 
 
-def extract_features(model, image_path, device, resize=None,
+def extract_features(model: RelightModule, image_path: Path | str, device=None, resize=None,
                      tile_size=448, tile_overlap=0.2):
     """Extract static/dynamic features from image file using tiling.
 
@@ -239,32 +219,52 @@ def extract_features(model, image_path, device, resize=None,
     Returns:
         (static, dyn, pos, tiling_module) feature tensors.
     """
-    image = Image.open(image_path).convert('RGB')
-    return extract_features_pil(model, image, device, resize=resize,
-                                tile_size=tile_size, tile_overlap=tile_overlap)
+    img = load_image(image_path, device, resize=resize)
+    return _extract_features_from_tensor(model, img, tile_size, tile_overlap)
 
 
-def extract_features_pil(model, image, device, resize=None,
-                         tile_size=448, tile_overlap=0.2):
-    """Extract static/dynamic features from a PIL Image using tiling.
+def extract_lighting(model: RelightModule, reference: torch.Tensor, tile_size: int=448, tile_overlap=0.2):
+    """Extract lighting features from one normalized ``1,C,H,W`` tensor."""
+    if reference.shape[0] != 1:
+        raise ValueError("extract_lighting expects a single reference image")
+    reference, _ = _pad_to_min_size(reference, tile_size)
+    _, lighting, _, _ = _extract_features_from_tensor(
+        model, reference, tile_size, tile_overlap
+    )
+    return lighting
 
-    Args:
-        model: Loaded RelightModule.
-        image: PIL Image (any mode, converted to RGB internally).
-        device: torch.device.
-        resize: Optional resize dimension.
-        tile_size: Tile size for blended tiling.
-        tile_overlap: Overlap fraction between tiles.
 
-    Returns:
-        (static, dyn, pos, tiling_module) feature tensors.
-    """
-    image = image.convert('RGB')
-    transform = get_transform()
-    img = transform(image).unsqueeze(0)
-    if resize is not None:
-        img = transforms.Resize(resize)(img)
-    return _extract_features_from_tensor(model, img, device, tile_size, tile_overlap)
+def relight(
+        model: RelightModule,
+        images: torch.Tensor,
+        lighting: torch.Tensor,
+        tile_size=448, tile_overlap=0.2):
+    """Apply lighting features to a normalized ``N,C,H,W`` image tensor."""
+    outputs = []
+    with torch.inference_mode():
+        for image in images.split(1):
+            image, pad_info = _pad_to_min_size(image, tile_size)
+            static, _, pos, tiling_module = _extract_features_from_tensor(
+                model, image, tile_size, tile_overlap
+            )
+            features = model.lighting_entangler(static, pos, lighting)
+            output = model.croco.decode(
+                features, pos, {"height": tile_size, "width": tile_size}
+            )
+            output = tiling_module.rebuild_with_masks(output)
+            outputs.append(_unpad(output, pad_info))
+    return torch.cat(outputs, dim=0)
+
+
+def apply_mapper(model, images, mapper):
+    """Apply a shadow, albedo, or other compatible mapper to an image batch."""
+    outputs = []
+    with torch.inference_mode():
+        for image in images.split(1):
+            image, pad_info = _pad_to_min_size(image)
+            output = model.apply_mapper(image, mapper, use_consistency=False)
+            outputs.append(_unpad(output, pad_info))
+    return torch.cat(outputs, dim=0)
 
 
 def process_input(input_path, output_path, process_fn):
